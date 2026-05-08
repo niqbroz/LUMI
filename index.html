@@ -6,484 +6,206 @@
     <title>LUMI Science Explorer</title>
     <meta
       name="description"
-      content="Prototype interaktif LUMI Science Explorer, platform literasi sains inklusif berbasis AI untuk eksplorasi masalah nyata."
+      content="Game prototype interaktif LUMI Science Explorer untuk investigasi sains berbasis bukti."
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body>
-    <div class="ambient ambient-one"></div>
-    <div class="ambient ambient-two"></div>
+  <body data-world="water">
+    <div class="start-overlay" id="startOverlay">
+      <div class="start-card">
+        <div class="start-badge">Playable Prototype</div>
+        <div class="start-avatar">L</div>
+        <h1>LUMI Science Explorer</h1>
+        <p>
+          Investigasi masalah nyata. Kumpulkan bukti. Tebak penyebab utama.
+          Susun solusi yang paling masuk akal.
+        </p>
+        <div class="start-points">
+          <span>Hotspot Scene</span>
+          <span>Evidence Hunt</span>
+          <span>Cause Board</span>
+          <span>Action Cards</span>
+        </div>
+        <button class="primary-cta" id="startGame" type="button">Main Sekarang</button>
+      </div>
+    </div>
 
-    <header class="topbar">
-      <a class="brand" href="#home" aria-label="LUMI Science Explorer">
-        <span class="brand-mark">L</span>
-        <span class="brand-copy">
-          <strong>LUMI</strong>
-          <small>Science Explorer</small>
-        </span>
-      </a>
-
-      <nav class="topnav" aria-label="Navigasi utama">
-        <a href="#worlds">Dunia</a>
-        <a href="#lab">Simulasi</a>
-        <a href="#builder">Solusi</a>
-        <a href="#dashboard">Dashboard</a>
-      </nav>
-
-      <a class="button ghost" href="#prototype">Buka Prototype</a>
-    </header>
-
-    <main>
-      <section class="section hero" id="home">
-        <div class="hero-copy">
-          <p class="eyebrow">Platform Literasi Sains Inklusif Berbasis AI</p>
-          <h1>
-            Jelajahi masalah nyata,
-            <span>cari bukti, bangun solusi.</span>
-          </h1>
-          <p class="hero-text">
-            <strong>LUMI Science Explorer</strong> mengubah pembelajaran sains
-            dari hafalan menjadi pengalaman eksplorasi. Anak memilih isu yang
-            mereka pedulikan, lalu dibimbing avatar AI <strong>Lumi</strong>
-            untuk mengamati, membaca data, mencoba simulasi, dan memverifikasi
-            solusi.
-          </p>
-
-          <div class="hero-actions">
-            <a class="button primary" href="#prototype">Mulai Jelajah</a>
-            <a class="button secondary" href="#dashboard">Lihat Science Compass</a>
-          </div>
-
-          <div class="trust-row">
-            <div class="trust-item">
-              <strong>Problem-first</strong>
-              <span>Belajar dimulai dari isu nyata, bukan bab pelajaran.</span>
-            </div>
-            <div class="trust-item">
-              <strong>AI Guide</strong>
-              <span>Lumi memberi hint, pertanyaan, dan cek solusi.</span>
-            </div>
-            <div class="trust-item">
-              <strong>Inklusif</strong>
-              <span>Teks, audio, visual, dan mode bahasa sederhana.</span>
-            </div>
+    <div class="game-shell">
+      <header class="hud">
+        <div class="brand-block">
+          <div class="brand-mark">L</div>
+          <div class="brand-copy">
+            <strong>LUMI</strong>
+            <span>Science Explorer</span>
           </div>
         </div>
 
-        <div class="hero-stage">
-          <article class="stage-panel spotlight">
-            <div class="panel-tag">Live Mission</div>
-            <h2>Water World</h2>
-            <p>
-              “Mengapa sungai dekat sekolah menjadi keruh setelah hujan?
-              Mari cek bukti dulu.”
-            </p>
-            <div class="stage-metrics">
-              <div>
-                <strong>4 Data Penting</strong>
-                <span>warna air, pH, curah hujan, sumber limbah</span>
-              </div>
-              <div>
-                <strong>3 Langkah</strong>
-                <span>amati, bandingkan, verifikasi</span>
-              </div>
-            </div>
-          </article>
+        <nav class="world-tabs" id="worldTabs" aria-label="Pilih dunia misi"></nav>
 
-          <article class="stage-panel compass">
-            <div class="panel-tag">Science Compass</div>
-            <ul>
-              <li><span>Observasi</span><strong>84</strong></li>
-              <li><span>Membaca Data</span><strong>76</strong></li>
-              <li><span>Membangun Solusi</span><strong>79</strong></li>
-            </ul>
+        <div class="hud-stats">
+          <article class="hud-pill">
+            <span>XP</span>
+            <strong id="xpValue">0</strong>
           </article>
-
-          <article class="stage-panel badge-card">
-            <div class="panel-tag">Reward Bermakna</div>
-            <h3>Badge Minggu Ini</h3>
-            <div class="badge-showcase">
-              <span>Water Detective</span>
-              <span>Evidence Explorer</span>
-              <span>Solution Builder</span>
-            </div>
+          <article class="hud-pill">
+            <span>Stars</span>
+            <strong id="starsValue">0</strong>
+          </article>
+          <article class="hud-pill">
+            <span>Clear</span>
+            <strong id="clearValue">0/7</strong>
           </article>
         </div>
-      </section>
+      </header>
 
-      <section class="section mode-section">
-        <div class="section-heading">
-          <p class="eyebrow">Mode Pengguna</p>
-          <h2>Satu platform, tiga cara belajar</h2>
-        </div>
+      <main class="game-grid">
+        <aside class="left-rail">
+          <section class="glass-card mission-card">
+            <div class="panel-label">Mission Brief</div>
+            <h2 id="worldTitle">Water World</h2>
+            <p id="worldPrompt"></p>
 
-        <div class="mode-grid">
-          <article class="mode-card">
-            <span class="mode-label">Kids</span>
-            <h3>Visual, singkat, penuh eksperimen aman</h3>
-            <p>
-              Cocok untuk usia dasar dengan misi ringkas, pertanyaan sederhana,
-              dan banyak bantuan visual.
-            </p>
-          </article>
-
-          <article class="mode-card">
-            <span class="mode-label">Teens</span>
-            <h3>Analisis data, trade-off, dan refleksi</h3>
-            <p>
-              Remaja bisa membandingkan solusi, menimbang biaya, dampak, dan
-              bukti ilmiah sebelum mengambil keputusan.
-            </p>
-          </article>
-
-          <article class="mode-card">
-            <span class="mode-label">Teacher</span>
-            <h3>Siap untuk diskusi kelas dan proyek</h3>
-            <p>
-              Guru mendapat tujuan pembelajaran, pertanyaan diskusi, dan
-              rubrik sederhana tanpa perlu menyiapkan semuanya dari nol.
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section path-section">
-        <div class="section-heading">
-          <p class="eyebrow">Alur Pengalaman</p>
-          <h2>Dari masalah menuju solusi berbasis bukti</h2>
-        </div>
-
-        <div class="path-grid">
-          <article>1. Pilih masalah</article>
-          <article>2. Amati fenomena</article>
-          <article>3. Pahami konsep</article>
-          <article>4. Coba simulasi</article>
-          <article>5. Bangun solusi</article>
-          <article>6. Verifikasi dan refleksi</article>
-        </div>
-      </section>
-
-      <section class="section toolbelt">
-        <div class="section-heading narrow">
-          <p class="eyebrow">Aksesibilitas</p>
-          <h2>Belajar sesuai kebutuhanmu</h2>
-        </div>
-
-        <div class="toggle-row" aria-label="Pengaturan aksesibilitas">
-          <button class="toggle-button" data-toggle="listen" type="button">Bacakan</button>
-          <button class="toggle-button" data-toggle="simple" type="button">Bahasa Sederhana</button>
-          <button class="toggle-button" data-toggle="contrast" type="button">Kontras Tinggi</button>
-          <button class="toggle-button" data-toggle="motion" type="button">Kurangi Animasi</button>
-        </div>
-      </section>
-
-      <section class="section prototype-section" id="prototype">
-        <div class="section-heading">
-          <p class="eyebrow">Interactive Prototype</p>
-          <h2>Ruang eksplorasi utama LUMI</h2>
-          <p class="section-copy">
-            Klik dunia masalah yang ingin dijelajahi. Semua panel di bawah ini
-            akan berubah mengikuti misi yang kamu pilih.
-          </p>
-        </div>
-
-        <div class="prototype-grid">
-          <aside class="panel world-panel" id="worlds">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">World Map</p>
-                <h3>Dunia masalah</h3>
-              </div>
-              <span class="panel-badge">7 zona</span>
-            </div>
-
-            <div class="world-grid">
-              <button class="world-card active" data-world="water" style="--world-accent:#0f766e" type="button">
-                <strong>Water World</strong>
-                <span>Air kotor, banjir, sanitasi, mikroplastik</span>
-              </button>
-              <button class="world-card" data-world="air" style="--world-accent:#0f766e" type="button">
-                <strong>Air City</strong>
-                <span>Polusi, asap, kualitas udara, suhu kota</span>
-              </button>
-              <button class="world-card" data-world="waste" style="--world-accent:#ca8a04" type="button">
-                <strong>Waste Zone</strong>
-                <span>Plastik sekali pakai, kompos, e-waste</span>
-              </button>
-              <button class="world-card" data-world="energy" style="--world-accent:#ea580c" type="button">
-                <strong>Energy Lab</strong>
-                <span>Listrik sekolah, hemat energi, panel surya</span>
-              </button>
-              <button class="world-card" data-world="climate" style="--world-accent:#2563eb" type="button">
-                <strong>Climate Dome</strong>
-                <span>Panas kota, banjir, adaptasi iklim</span>
-              </button>
-              <button class="world-card" data-world="food" style="--world-accent:#16a34a" type="button">
-                <strong>Food &amp; Health Hub</strong>
-                <span>Gizi, kebersihan, keamanan makanan</span>
-              </button>
-              <button class="world-card" data-world="biodiversity" style="--world-accent:#15803d" type="button">
-                <strong>Biodiversity Forest</strong>
-                <span>Habitat, rantai makanan, konservasi lokal</span>
-              </button>
-            </div>
-          </aside>
-
-          <section class="panel mission-panel">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow" id="missionLabel">Water World Mission</p>
-                <h3 id="missionTitle">Menyelidiki sungai yang mendadak keruh</h3>
-              </div>
-              <span class="panel-badge" id="themeName">Tema: Air</span>
-            </div>
-
-            <p class="mission-question" id="missionQuestion">
-              Mengapa air sungai dekat sekolah berubah keruh setelah hujan, dan
-              data apa yang paling penting untuk dicek?
-            </p>
-
-            <p class="mission-summary" id="missionSummary"></p>
-
-            <div class="scene-canvas">
-              <div class="scene-grid" id="sceneNodes"></div>
-            </div>
-
-            <div class="info-block">
-              <div>
-                <h4>Konsep Kunci</h4>
-                <div class="chip-list" id="missionConcepts"></div>
-              </div>
-              <div>
-                <h4>Data Observasi</h4>
-                <div class="chip-list muted" id="missionData"></div>
-              </div>
-            </div>
-
-            <div class="media-strip" id="mediaLibrary"></div>
+            <div class="objective-stack" id="objectiveStack"></div>
           </section>
 
-          <aside class="panel guide-panel">
-            <div class="panel-head">
+          <section class="glass-card tools-card">
+            <div class="panel-label">Toolkit</div>
+            <div class="tool-grid" id="toolGrid"></div>
+          </section>
+
+          <section class="glass-card control-card">
+            <div class="panel-label">Control</div>
+            <div class="control-buttons">
+              <button class="control-button launch" id="submitMission" type="button">
+                Launch Mission
+              </button>
+              <button class="control-button" id="resetMission" type="button">
+                Reset Misi
+              </button>
+            </div>
+          </section>
+        </aside>
+
+        <section class="play-zone">
+          <div class="play-head">
+            <div>
+              <div class="panel-label">Mission Zone</div>
+              <h3 id="missionTitle"></h3>
+            </div>
+            <div class="step-track" id="stepTrack"></div>
+          </div>
+
+          <div class="scene-frame">
+            <div class="scene-glow"></div>
+            <div class="scene" id="scene"></div>
+            <div class="scene-caption" id="sceneCaption"></div>
+          </div>
+
+          <div class="deck-row">
+            <section class="glass-card deck-card evidence-card">
+              <div class="deck-head">
+                <div class="panel-label">Evidence Bag</div>
+                <strong id="evidenceCounter">0/4</strong>
+              </div>
+              <div class="evidence-grid" id="evidenceGrid"></div>
+            </section>
+
+            <section class="glass-card deck-card suspect-card">
+              <div class="deck-head">
+                <div class="panel-label">Cause Board</div>
+                <strong id="suspectCounter">Locked</strong>
+              </div>
+              <div class="suspect-grid" id="suspectGrid"></div>
+            </section>
+          </div>
+        </section>
+
+        <aside class="right-rail">
+          <section class="glass-card lumi-card">
+            <div class="lumi-head">
+              <div class="lumi-avatar">L</div>
               <div>
-                <p class="eyebrow">AI Guide Panel</p>
+                <div class="panel-label">AI Guide</div>
                 <h3>Lumi</h3>
               </div>
-              <span class="panel-badge">Hint bertahap</span>
             </div>
 
-            <div class="chat-log" id="chatLog" aria-live="polite"></div>
+            <div class="speech-box" id="speechBox"></div>
 
-            <div class="action-row">
-              <button class="button secondary small" data-action="hint" type="button">Minta Hint</button>
-              <button class="button secondary small" data-action="simple" type="button">Jelaskan Lebih Mudah</button>
-              <button class="button secondary small" data-action="check" type="button">Cek Solusiku</button>
+            <div class="quick-row">
+              <button class="quick-button" data-quick="hint" type="button">Hint</button>
+              <button class="quick-button" data-quick="recap" type="button">Recap</button>
+              <button class="quick-button" data-quick="easy" type="button">Simple</button>
+            </div>
+          </section>
+
+          <section class="glass-card solution-card">
+            <div class="deck-head">
+              <div class="panel-label">Action Cards</div>
+              <strong id="solutionCounter">0/2</strong>
+            </div>
+            <div class="solution-grid" id="solutionGrid"></div>
+          </section>
+
+          <section class="glass-card meter-card">
+            <div class="deck-head">
+              <div class="panel-label">Mission Meter</div>
+              <strong id="missionRank">Waiting</strong>
             </div>
 
-            <form class="prompt-form" id="promptForm">
-              <label class="sr-only" for="promptInput">Tulis pertanyaan untuk Lumi</label>
-              <input
-                id="promptInput"
-                name="prompt"
-                type="text"
-                placeholder="Tanya Lumi: data apa yang penting?"
-                autocomplete="off"
-              />
-              <button class="button primary small" type="submit">Kirim</button>
-            </form>
-          </aside>
+            <div class="meter-stack">
+              <div class="meter-row">
+                <span>Impact</span>
+                <div class="meter-track"><i id="impactMeter"></i></div>
+              </div>
+              <div class="meter-row">
+                <span>Speed</span>
+                <div class="meter-track"><i id="speedMeter"></i></div>
+              </div>
+              <div class="meter-row">
+                <span>Budget</span>
+                <div class="meter-track"><i id="budgetMeter"></i></div>
+              </div>
+              <div class="meter-row">
+                <span>Proof</span>
+                <div class="meter-track"><i id="proofMeter"></i></div>
+              </div>
+            </div>
+
+            <p class="meter-copy" id="meterCopy"></p>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <div class="result-overlay" id="resultOverlay" hidden>
+      <div class="result-card">
+        <div class="result-label">Mission Result</div>
+        <h2 id="resultTitle"></h2>
+        <div class="result-rank" id="resultRank"></div>
+        <p id="resultSummary"></p>
+
+        <div class="result-stats">
+          <article>
+            <span>Bukti</span>
+            <strong id="resultEvidence"></strong>
+          </article>
+          <article>
+            <span>Penyebab</span>
+            <strong id="resultCause"></strong>
+          </article>
+          <article>
+            <span>Action Pack</span>
+            <strong id="resultActions"></strong>
+          </article>
         </div>
-      </section>
 
-      <section class="section lab-section" id="lab">
-        <div class="section-heading">
-          <p class="eyebrow">Science Simulation Lab</p>
-          <h2>Ubah variabel, lihat dampaknya</h2>
+        <div class="result-buttons">
+          <button class="primary-cta" id="replayMission" type="button">Ulangi Misi</button>
+          <button class="secondary-cta" id="nextMission" type="button">Misi Berikutnya</button>
         </div>
-
-        <div class="lab-grid">
-          <section class="panel">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Simulation Controls</p>
-                <h3>Atur kondisi lapangan</h3>
-              </div>
-              <span class="panel-badge">Eksperimen aman</span>
-            </div>
-
-            <div class="slider-stack" id="labControls"></div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Live Metrics</p>
-                <h3>Hasil simulasi</h3>
-              </div>
-              <span class="panel-badge">Real-time</span>
-            </div>
-
-            <div class="metrics-grid" id="metricsGrid"></div>
-            <div class="insight-card" id="labInsight"></div>
-          </section>
-        </div>
-      </section>
-
-      <section class="section builder-section" id="builder">
-        <div class="section-heading">
-          <p class="eyebrow">Solution Builder</p>
-          <h2>Susun solusi yang realistis</h2>
-        </div>
-
-        <div class="builder-grid">
-          <section class="panel">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Pilihan Solusi</p>
-                <h3>Gabungkan beberapa tindakan</h3>
-              </div>
-              <span class="panel-badge">Tap untuk pilih</span>
-            </div>
-
-            <div class="solutions-grid" id="solutionsGrid"></div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Skor Solusi</p>
-                <h3>Trade-off yang perlu dipertimbangkan</h3>
-              </div>
-              <span class="panel-badge">Dampak + biaya + bukti</span>
-            </div>
-
-            <div class="score-stack">
-              <div class="score-row">
-                <span>Dampak</span>
-                <div class="score-bar"><i id="impactScore"></i></div>
-              </div>
-              <div class="score-row">
-                <span>Keterjangkauan</span>
-                <div class="score-bar"><i id="costScore"></i></div>
-              </div>
-              <div class="score-row">
-                <span>Kemudahan</span>
-                <div class="score-bar"><i id="feasibilityScore"></i></div>
-              </div>
-              <div class="score-row">
-                <span>Kekuatan bukti</span>
-                <div class="score-bar"><i id="evidenceScore"></i></div>
-              </div>
-            </div>
-
-            <div class="insight-card" id="solutionInsight"></div>
-          </section>
-        </div>
-      </section>
-
-      <section class="section verify-section">
-        <div class="verify-grid">
-          <section class="panel">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Verification Room</p>
-                <h3>Apakah solusi ini benar-benar masuk akal?</h3>
-              </div>
-              <span class="panel-badge">Fitur pembeda</span>
-            </div>
-
-            <div class="verification-list" id="verificationList"></div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Reflection Journal</p>
-                <h3>Tutup misi dengan refleksi</h3>
-              </div>
-              <span class="panel-badge">1 menit</span>
-            </div>
-
-            <p class="reflection-prompt" id="reflectionPrompt"></p>
-            <textarea
-              id="reflectionJournal"
-              rows="8"
-              placeholder="Tulis apa yang paling kamu pelajari dari misi ini..."
-            ></textarea>
-            <div class="action-row">
-              <button class="button primary small" id="saveReflection" type="button">Simpan Refleksi</button>
-              <button class="button secondary small" id="generateReflection" type="button">Buat Contoh</button>
-            </div>
-            <p class="status-copy" id="reflectionStatus"></p>
-          </section>
-        </div>
-      </section>
-
-      <section class="section dashboard-section" id="dashboard">
-        <div class="dashboard-grid">
-          <section class="panel">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Progress Dashboard</p>
-                <h3>Science Compass</h3>
-              </div>
-              <span class="panel-badge">Gamifikasi bermakna</span>
-            </div>
-
-            <div class="stats-row">
-              <article class="stat-card">
-                <strong id="xpValue">0</strong>
-                <span>XP</span>
-              </article>
-              <article class="stat-card">
-                <strong id="missionValue">0</strong>
-                <span>Misi dijelajahi</span>
-              </article>
-              <article class="stat-card">
-                <strong id="streakValue">0</strong>
-                <span>Badge aktif</span>
-              </article>
-            </div>
-
-            <div class="compass-stack" id="compassGrid"></div>
-
-            <div class="badge-shelf" id="badgeShelf"></div>
-          </section>
-
-          <section class="panel teacher-panel">
-            <div class="panel-head">
-              <div>
-                <p class="eyebrow">Teacher Mode</p>
-                <h3>Siap dipakai di kelas</h3>
-              </div>
-              <span class="panel-badge">35 menit</span>
-            </div>
-
-            <div class="teacher-block">
-              <h4>Tujuan Pembelajaran</h4>
-              <p id="teacherGoal"></p>
-            </div>
-
-            <div class="teacher-block">
-              <h4>Alur Kelas</h4>
-              <p id="teacherFlow"></p>
-            </div>
-
-            <div class="teacher-block">
-              <h4>Pertanyaan Diskusi</h4>
-              <div class="teacher-questions" id="teacherQuestions"></div>
-            </div>
-          </section>
-        </div>
-      </section>
-    </main>
-
-    <footer class="footer">
-      <p>
-        Prototype interaktif <strong>LUMI Science Explorer</strong> untuk
-        presentasi konsep web/app literasi sains berbasis AI.
-      </p>
-    </footer>
+      </div>
+    </div>
 
     <script src="./script.js"></script>
   </body>
