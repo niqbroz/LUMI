@@ -1,83 +1,1295 @@
 <!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Science Mission 3D Prototype</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./style.css" />
-  </head>
-  <body>
-    <div class="app-shell">
-      <canvas id="scene3d" aria-label="Peta 3D Misi Sains"></canvas>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SciQuest — Science Mission Platform</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0e1a;--bg2:#111827;--bg3:#1a2235;--bg4:#1e2d45;
+  --card:#151d2e;--card2:#1c2740;
+  --border:#2a3a55;--border2:#344766;
+  --text:#e8edf5;--text2:#8fa3bf;--text3:#5c7a9e;
+  --green:#22c97a;--green2:#16a860;--green3:#0d6b3e;
+  --blue:#3b9eff;--blue2:#1a7de8;--blue3:#0f4e99;
+  --amber:#f5a623;--amber2:#d4881a;--amber3:#8a5710;
+  --red:#f25757;--red2:#d43c3c;
+  --purple:#9b6dff;--purple2:#7c4fe0;
+  --teal:#2dd4bf;--teal2:#14b8a4;
+  --gold:#ffd700;
+  --radius:12px;--radius2:8px;--radius3:20px;
+  --shadow:0 4px 24px rgba(0,0,0,0.4);
+  --shadow2:0 2px 12px rgba(0,0,0,0.3);
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;overflow-x:hidden;min-height:100vh}
+h1,h2,h3,h4{font-weight:600}
+button{cursor:pointer;border:none;outline:none;font-family:inherit}
+input,select,textarea{font-family:inherit}
 
-      <header class="topbar glass">
-        <div class="brand-wrap">
-          <p class="eyebrow">Prototype Edukasi 3D</p>
-          <h1>Science Mission World</h1>
-        </div>
-        <div class="mode-switch" role="group" aria-label="Pilih mode usia">
-          <button id="modeKids" class="btn active">Kids</button>
-          <button id="modeTeen" class="btn">SMP/SMA</button>
-        </div>
-      </header>
+/* ─── SCREENS ─── */
+.screen{display:none;position:fixed;inset:0;z-index:10;overflow-y:auto}
+.screen.active{display:block}
 
-      <aside class="panel panel-left glass">
-        <div class="panel-head">
-          <h2>Mission Map</h2>
-          <span id="difficultyChip" class="chip">Dasar</span>
-        </div>
-        <p id="modeDescription" class="mode-description"></p>
-        <div id="missionList" class="mission-list"></div>
-      </aside>
+/* ─── LANDING ─── */
+#screen-landing{background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+#canvas-3d{position:absolute;inset:0;z-index:0}
+.landing-overlay{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;text-align:center}
+.logo-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,158,255,0.15);border:1px solid rgba(59,158,255,0.3);border-radius:var(--radius3);padding:6px 16px;font-size:13px;color:var(--blue);margin-bottom:1.5rem}
+.logo-badge span{font-size:18px}
+.landing-title{font-size:clamp(2.5rem,6vw,4.5rem);font-weight:700;line-height:1.1;margin-bottom:1rem;background:linear-gradient(135deg,#fff 0%,var(--blue) 50%,var(--teal) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.landing-sub{font-size:1.1rem;color:var(--text2);max-width:520px;line-height:1.7;margin-bottom:2.5rem}
+.mode-cards{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-bottom:2rem}
+.mode-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);padding:1.5rem;width:200px;cursor:pointer;transition:all .25s;text-align:left;position:relative;overflow:hidden}
+.mode-card::before{content:'';position:absolute;inset:0;opacity:0;transition:.25s}
+.mode-card:hover{transform:translateY(-4px);border-color:var(--border2)}
+.mode-card:hover::before{opacity:1}
+.mode-card.kids::before{background:linear-gradient(135deg,rgba(34,201,122,.08),transparent)}
+.mode-card.teen::before{background:linear-gradient(135deg,rgba(59,158,255,.08),transparent)}
+.mode-card:hover.kids{border-color:var(--green);box-shadow:0 0 20px rgba(34,201,122,.2)}
+.mode-card:hover.teen{border-color:var(--blue);box-shadow:0 0 20px rgba(59,158,255,.2)}
+.mode-icon{font-size:2.5rem;margin-bottom:.75rem;display:block}
+.mode-title{font-size:1.1rem;font-weight:700;margin-bottom:.25rem}
+.mode-sub{font-size:.8rem;color:var(--text2)}
+.mode-tag{display:inline-block;margin-top:.75rem;font-size:.7rem;padding:3px 10px;border-radius:20px;font-weight:600}
+.kids .mode-tag{background:rgba(34,201,122,.15);color:var(--green)}
+.teen .mode-tag{background:rgba(59,158,255,.15);color:var(--blue)}
+.particles-hint{font-size:.8rem;color:var(--text3);margin-top:1rem}
 
-      <main class="panel panel-right glass">
-        <section class="mission-detail">
-          <div class="panel-head">
-            <h2 id="missionTitle">Pilih misi</h2>
-            <span id="issueBadge" class="chip">-</span>
-          </div>
-          <p id="missionBody"></p>
+/* ─── MAIN APP ─── */
+#screen-app{background:var(--bg);display:flex;flex-direction:column}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(10,14,26,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;padding:.75rem 1.5rem}
+.topbar-logo{font-size:1.2rem;font-weight:700;color:var(--blue);cursor:pointer;flex-shrink:0}
+.topbar-logo span{color:var(--teal)}
+.topbar-nav{display:flex;gap:.25rem;flex:1}
+.nav-btn{background:none;color:var(--text2);border:none;padding:.5rem .9rem;border-radius:var(--radius2);font-size:.85rem;transition:.2s;display:flex;align-items:center;gap:6px}
+.nav-btn:hover,.nav-btn.active{background:var(--card2);color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:.75rem;flex-shrink:0}
+.xp-pill{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:.8rem;display:flex;align-items:center;gap:6px}
+.xp-pill .xp-val{font-weight:700;color:var(--gold)}
+.streak-pill{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:.8rem;display:flex;align-items:center;gap:6px;color:var(--amber)}
+.avatar-btn{width:36px;height:36px;border-radius:50%;background:var(--blue3);border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer}
 
-          <div class="phase-grid">
-            <button class="phase-btn active" data-phase="observe">Observasi</button>
-            <button class="phase-btn" data-phase="analyze">Analisis</button>
-            <button class="phase-btn" data-phase="build">Solusi</button>
-            <button class="phase-btn" data-phase="verify">Verifikasi</button>
-          </div>
+/* ─── TABS ─── */
+.tab-content{display:none}
+.tab-content.active{display:block}
 
-          <div id="phaseContent" class="phase-content"></div>
-        </section>
+/* ─── WORLD MAP ─── */
+#world-canvas-wrap{position:relative;height:420px;background:var(--bg2);border-radius:var(--radius);overflow:hidden;margin:1.5rem;border:1px solid var(--border)}
+#world-canvas{width:100%;height:100%}
+.world-ui{position:absolute;inset:0;pointer-events:none;z-index:5}
+.world-title{position:absolute;top:16px;left:20px;font-size:1.1rem;font-weight:700}
+.world-legend{position:absolute;bottom:16px;left:20px;display:flex;gap:.75rem;flex-wrap:wrap}
+.legend-dot{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--text2)}
+.legend-dot span{width:10px;height:10px;border-radius:50%;display:inline-block}
+.world-hint{position:absolute;top:16px;right:16px;font-size:.75rem;color:var(--text3);background:rgba(0,0,0,.4);border-radius:8px;padding:6px 10px}
+.zone-tooltip{position:absolute;background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);padding:.75rem 1rem;pointer-events:none;z-index:10;display:none;min-width:160px}
+.zone-tooltip.show{display:block}
 
-        <section class="lab-card">
-          <div class="panel-head">
-            <h3>Mini Simulasi</h3>
-            <span class="chip">Interactive</span>
-          </div>
-          <label for="sourceSlider">Kurangi sumber polusi: <strong><span id="sliderValue">30</span>%</strong></label>
-          <input type="range" id="sourceSlider" min="0" max="100" value="30" />
-          <p id="impactText">Dampak air membaik secara bertahap saat sumber polusi dikurangi.</p>
-        </section>
+/* ─── MISSION CARDS ─── */
+.section{padding:0 1.5rem 1.5rem}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.section-title{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.section-title .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.see-all{font-size:.8rem;color:var(--blue);background:none;border:none;padding:4px 8px;border-radius:6px}
+.see-all:hover{background:var(--card2)}
+.mission-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
+.mission-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.mission-card::after{content:'';position:absolute;inset:0;border-radius:var(--radius);opacity:0;transition:.2s}
+.mission-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.mission-card:hover::after{opacity:1}
+.mc-topic-badge{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:600;padding:3px 10px;border-radius:20px;margin-bottom:.75rem}
+.mc-title{font-size:.95rem;font-weight:700;margin-bottom:.4rem;line-height:1.4}
+.mc-desc{font-size:.8rem;color:var(--text2);line-height:1.5;margin-bottom:.9rem}
+.mc-footer{display:flex;align-items:center;justify-content:space-between}
+.mc-xp{font-size:.75rem;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:4px}
+.mc-diff{font-size:.7rem;padding:2px 8px;border-radius:20px}
+.mc-progress{height:3px;background:var(--bg3);border-radius:2px;margin-top:.75rem}
+.mc-progress-fill{height:100%;border-radius:2px;transition:.3s}
+.mc-locked{opacity:.5;cursor:not-allowed}
+.mc-locked::before{content:'🔒';position:absolute;top:.75rem;right:.75rem;font-size:1rem}
 
-        <section class="ai-card">
-          <div class="panel-head">
-            <h3>AI Guide</h3>
-            <button id="hintBtn" class="btn">Beri Hint</button>
-          </div>
-          <p id="hintText">Hint akan muncul bertahap agar kamu tetap berpikir sendiri.</p>
-        </section>
-      </main>
+/* Topic colors */
+.topic-water{background:rgba(59,158,255,.15);color:var(--blue);border:1px solid rgba(59,158,255,.3)}
+.topic-trash{background:rgba(245,166,35,.15);color:var(--amber);border:1px solid rgba(245,166,35,.3)}
+.topic-energy{background:rgba(155,109,255,.15);color:var(--purple);border:1px solid rgba(155,109,255,.3)}
+.diff-easy{background:rgba(34,201,122,.15);color:var(--green)}
+.diff-medium{background:rgba(245,166,35,.15);color:var(--amber)}
+.diff-hard{background:rgba(242,87,87,.15);color:var(--red)}
 
-      <footer class="hud glass">
-        <div class="metric"><span>XP</span><strong id="xpValue">120</strong></div>
-        <div class="metric"><span>Streak</span><strong id="streakValue">4 hari</strong></div>
-        <div class="metric"><span>Badge</span><strong id="badgeValue">Water Scout</strong></div>
-        <div class="metric"><span>Skill Map</span><strong id="skillValue">Observasi 68%</strong></div>
-      </footer>
+/* ─── SKILL MAP ─── */
+.skill-map{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem}
+.skill-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);padding:1rem;text-align:center}
+.skill-icon{font-size:1.5rem;margin-bottom:.5rem}
+.skill-name{font-size:.8rem;font-weight:600;margin-bottom:.5rem}
+.skill-bar-wrap{background:var(--bg3);border-radius:4px;height:6px;overflow:hidden}
+.skill-bar-fill{height:100%;border-radius:4px;background:var(--blue)}
+.skill-pct{font-size:.7rem;color:var(--text3);margin-top:.25rem}
+
+/* ─── STATS ROW ─── */
+.stats-row{display:flex;gap:1rem;padding:0 1.5rem 1.5rem;flex-wrap:wrap}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);padding:1rem 1.25rem;flex:1;min-width:120px}
+.stat-label{font-size:.75rem;color:var(--text3);margin-bottom:.25rem}
+.stat-val{font-size:1.4rem;font-weight:700}
+
+/* ─── MISSION DETAIL ─── */
+#screen-mission{background:var(--bg);z-index:200}
+.mission-header{background:var(--card);border-bottom:1px solid var(--border);padding:1.25rem 1.5rem;display:flex;align-items:center;gap:1rem}
+.back-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:.5rem 1rem;border-radius:var(--radius2);font-size:.85rem;display:flex;align-items:center;gap:6px}
+.back-btn:hover{background:var(--card2)}
+.mission-body{max-width:780px;margin:0 auto;padding:1.5rem}
+.step-indicator{display:flex;gap:.5rem;align-items:center;margin-bottom:1.5rem}
+.step-dot{width:10px;height:10px;border-radius:50%;background:var(--border);transition:.3s}
+.step-dot.active{background:var(--blue);box-shadow:0 0 8px var(--blue)}
+.step-dot.done{background:var(--green)}
+.mission-scene{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;margin-bottom:1.5rem;min-height:200px;position:relative}
+.scene-img{font-size:4rem;margin-bottom:1rem;display:block;text-align:center}
+.scene-title{font-size:1.1rem;font-weight:700;margin-bottom:.75rem;text-align:center}
+.scene-body{font-size:.9rem;color:var(--text2);line-height:1.7;margin-bottom:1.5rem}
+.evidence-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:1rem 0}
+.evidence-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius2);padding:.875rem;cursor:pointer;transition:.2s;text-align:left}
+.evidence-card:hover{border-color:var(--blue);background:var(--card2)}
+.evidence-card.selected{border-color:var(--green);background:rgba(34,201,122,.07)}
+.evidence-card.wrong{border-color:var(--red);background:rgba(242,87,87,.07);animation:shake .3s}
+.ev-icon{font-size:1.5rem;margin-bottom:.4rem;display:block}
+.ev-title{font-size:.85rem;font-weight:600;margin-bottom:.2rem}
+.ev-desc{font-size:.75rem;color:var(--text2);line-height:1.4}
+.quiz-options{display:flex;flex-direction:column;gap:.75rem;margin:1rem 0}
+.quiz-opt{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius2);padding:.875rem 1.125rem;cursor:pointer;transition:.2s;font-size:.9rem;display:flex;align-items:center;gap:.75rem}
+.quiz-opt:hover{border-color:var(--blue);background:var(--card2)}
+.quiz-opt.correct{border-color:var(--green);background:rgba(34,201,122,.07)}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(242,87,87,.07)}
+.opt-letter{width:28px;height:28px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0}
+.action-row{display:flex;gap:.75rem;flex-wrap:wrap}
+.btn-primary{background:var(--blue);color:#fff;padding:.75rem 1.5rem;border-radius:var(--radius2);font-size:.9rem;font-weight:600;transition:.2s}
+.btn-primary:hover{background:var(--blue2)}
+.btn-secondary{background:var(--card);color:var(--text);border:1px solid var(--border);padding:.75rem 1.25rem;border-radius:var(--radius2);font-size:.9rem;transition:.2s}
+.btn-secondary:hover{background:var(--card2)}
+.btn-hint{background:rgba(245,166,35,.12);color:var(--amber);border:1px solid rgba(245,166,35,.3);padding:.6rem 1rem;border-radius:var(--radius2);font-size:.8rem}
+.btn-hint:hover{background:rgba(245,166,35,.2)}
+.btn-success{background:var(--green);color:#fff;padding:.75rem 1.5rem;border-radius:var(--radius2);font-size:.9rem;font-weight:600}
+.btn-success:hover{background:var(--green2)}
+.hint-box{background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.25);border-radius:var(--radius2);padding:1rem;margin:.75rem 0;font-size:.85rem;color:var(--text2);display:none}
+.hint-box.show{display:block}
+.hint-box strong{color:var(--amber)}
+
+/* ─── AI GUIDE ─── */
+.ai-guide-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:1.5rem;overflow:hidden}
+.ai-guide-header{background:var(--bg3);padding:.875rem 1.125rem;display:flex;align-items:center;gap:.75rem;font-size:.85rem;font-weight:600;border-bottom:1px solid var(--border)}
+.ai-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:1rem}
+.ai-msgs{padding:1rem;min-height:80px;max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:.75rem}
+.ai-msg{background:var(--bg3);border-radius:var(--radius2);padding:.75rem 1rem;font-size:.85rem;color:var(--text2);line-height:1.6;max-width:85%;animation:fadeIn .3s}
+.ai-msg.user-msg{background:rgba(59,158,255,.12);border:1px solid rgba(59,158,255,.2);align-self:flex-end;color:var(--text)}
+.ai-quick-btns{padding:.75rem 1rem;border-top:1px solid var(--border);display:flex;gap:.5rem;flex-wrap:wrap}
+.ai-qbtn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:.4rem .85rem;border-radius:20px;font-size:.75rem;transition:.2s}
+.ai-qbtn:hover{border-color:var(--blue);color:var(--text);background:var(--card2)}
+.ai-typing{display:flex;gap:4px;align-items:center;padding:.75rem 1rem}
+.ai-typing span{width:6px;height:6px;border-radius:50%;background:var(--text3);animation:blink 1.2s infinite}
+.ai-typing span:nth-child(2){animation-delay:.2s}
+.ai-typing span:nth-child(3){animation-delay:.4s}
+
+/* ─── SOLUTION BUILDER ─── */
+.solution-canvas{background:var(--bg2);border:1.5px dashed var(--border2);border-radius:var(--radius);padding:1.5rem;min-height:180px;margin:1rem 0}
+.solution-slots{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center}
+.s-slot{background:var(--card);border:1.5px dashed var(--border2);border-radius:var(--radius2);padding:.6rem 1rem;font-size:.8rem;color:var(--text3);cursor:pointer;transition:.2s;min-width:100px;text-align:center}
+.s-slot.filled{border-style:solid;border-color:var(--green);color:var(--text);background:rgba(34,201,122,.07)}
+.solution-pieces{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem}
+.s-piece{background:var(--card2);border:1px solid var(--border2);border-radius:var(--radius2);padding:.5rem .9rem;font-size:.8rem;cursor:grab;user-select:none;transition:.2s}
+.s-piece:hover{border-color:var(--blue);color:var(--blue)}
+.s-piece.used{opacity:.3;cursor:default}
+.arrow-icon{color:var(--text3);font-size:1.2rem}
+
+/* ─── BADGES GRID ─── */
+.badges-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.75rem}
+.badge-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);padding:1rem .75rem;text-align:center;transition:.2s}
+.badge-item:hover{border-color:var(--border2);transform:scale(1.03)}
+.badge-item.locked{opacity:.35;filter:grayscale(1)}
+.badge-icon{font-size:2rem;margin-bottom:.4rem;display:block}
+.badge-name{font-size:.7rem;font-weight:600;color:var(--text2)}
+
+/* ─── COMPLETION ─── */
+.completion-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:center;justify-content:center;display:none}
+.completion-overlay.show{display:flex;animation:fadeIn .3s}
+.completion-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;max-width:420px;width:90%;text-align:center}
+.comp-icon{font-size:4rem;margin-bottom:1rem;display:block}
+.comp-title{font-size:1.5rem;font-weight:700;margin-bottom:.5rem}
+.comp-sub{color:var(--text2);font-size:.9rem;margin-bottom:1.5rem;line-height:1.6}
+.comp-xp{font-size:2rem;font-weight:700;color:var(--gold);margin-bottom:.5rem}
+.comp-rewards{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem}
+.comp-badge{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:.4rem .9rem;font-size:.8rem}
+.progress-bar-wrap{background:var(--bg3);border-radius:4px;height:8px;margin:1rem 0;overflow:hidden}
+.progress-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--blue),var(--teal));transition:width 1s}
+
+/* ─── WORLD SELECTION ─── */
+.world-selector{display:flex;gap:1rem;padding:0 1.5rem 1rem;overflow-x:auto;scrollbar-width:none}
+.world-selector::-webkit-scrollbar{display:none}
+.world-pill{background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:.5rem 1.25rem;font-size:.85rem;cursor:pointer;white-space:nowrap;transition:.2s;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.world-pill:hover{border-color:var(--border2)}
+.world-pill.active.water{border-color:var(--blue);background:rgba(59,158,255,.1);color:var(--blue)}
+.world-pill.active.trash{border-color:var(--amber);background:rgba(245,166,35,.1);color:var(--amber)}
+.world-pill.active.energy{border-color:var(--purple);background:rgba(155,109,255,.1);color:var(--purple)}
+
+/* ─── REPORT / TEACHER ─── */
+.report-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+.report-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);padding:1.25rem}
+.rc-label{font-size:.75rem;color:var(--text3);margin-bottom:.4rem}
+.rc-val{font-size:1.5rem;font-weight:700;margin-bottom:.25rem}
+.rc-trend{font-size:.75rem;color:var(--green)}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--card);border:1px solid var(--green);border-radius:var(--radius2);padding:1rem 1.25rem;z-index:1000;display:flex;gap:.75rem;align-items:center;font-size:.875rem;box-shadow:var(--shadow);transform:translateY(80px);opacity:0;transition:.3s;max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-icon{font-size:1.25rem;flex-shrink:0}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(59,158,255,.4)}50%{box-shadow:0 0 0 8px rgba(59,158,255,0)}}
+@keyframes xpPop{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+
+.pulse{animation:pulse 2s infinite}
+</style>
+</head>
+<body>
+
+<!-- ══════════ LANDING ══════════ -->
+<div id="screen-landing" class="screen active">
+  <canvas id="canvas-3d"></canvas>
+  <div class="landing-overlay">
+    <div class="logo-badge"><span>🔬</span> Science Mission Platform</div>
+    <h1 class="landing-title">Jelajahi Sains,<br>Selamatkan Dunia</h1>
+    <p class="landing-sub">Belajar sains lewat misi nyata, investigasi masalah lingkungan, dan membangun solusi — seperti petualangan sesungguhnya.</p>
+    <div class="mode-cards">
+      <div class="mode-card kids" onclick="startApp('kids')">
+        <span class="mode-icon">🌊</span>
+        <div class="mode-title">Mode Kids</div>
+        <div class="mode-sub">Usia 8–12 tahun</div>
+        <div class="mode-tag">Petualang Muda</div>
+      </div>
+      <div class="mode-card teen" onclick="startApp('teen')">
+        <span class="mode-icon">🧪</span>
+        <div class="mode-title">Mode SMP/SMA</div>
+        <div class="mode-sub">Usia 13–18 tahun</div>
+        <div class="mode-tag">Ilmuwan Junior</div>
+      </div>
+    </div>
+    <p class="particles-hint">Klik planet untuk memulai petualanganmu 🚀</p>
+  </div>
+</div>
+
+<!-- ══════════ MAIN APP ══════════ -->
+<div id="screen-app" class="screen">
+  <div class="topbar">
+    <div class="topbar-logo" onclick="showScreen('landing')">Sci<span>Quest</span></div>
+    <div class="topbar-nav">
+      <button class="nav-btn active" onclick="switchTab('world')" id="nav-world">🌍 Dunia</button>
+      <button class="nav-btn" onclick="switchTab('skills')" id="nav-skills">🧠 Skill</button>
+      <button class="nav-btn" onclick="switchTab('badges')" id="nav-badges">🏆 Lencana</button>
+      <button class="nav-btn" onclick="switchTab('report')" id="nav-report">📊 Laporan</button>
+    </div>
+    <div class="topbar-right">
+      <div class="xp-pill">⭐ <span class="xp-val" id="xp-display">340</span> XP</div>
+      <div class="streak-pill">🔥 <span id="streak-display">5</span></div>
+      <div class="avatar-btn" id="avatar-icon">🧑</div>
+    </div>
+  </div>
+
+  <!-- WORLD TAB -->
+  <div class="tab-content active" id="tab-world">
+    <!-- World Selector -->
+    <div style="padding:1.5rem 1.5rem .5rem">
+      <h2 style="font-size:1rem;font-weight:700;margin-bottom:.75rem;color:var(--text2)">Pilih Dunia Misi</h2>
+    </div>
+    <div class="world-selector">
+      <div class="world-pill active water" onclick="selectWorld('water',this)">💧 Dunia Air</div>
+      <div class="world-pill" onclick="selectWorld('trash',this)">♻️ Dunia Sampah</div>
+      <div class="world-pill" onclick="selectWorld('energy',this)">⚡ Dunia Energi</div>
     </div>
 
-    <script type="module" src="./app.js"></script>
-  </body>
+    <!-- 3D World -->
+    <div id="world-canvas-wrap">
+      <canvas id="world-canvas"></canvas>
+      <div class="world-ui">
+        <div class="world-title" id="world-title">💧 Dunia Air</div>
+        <div class="world-hint">Klik pada titik misi untuk mulai</div>
+        <div class="world-legend">
+          <div class="legend-dot"><span style="background:var(--green)"></span>Selesai</div>
+          <div class="legend-dot"><span style="background:var(--blue)"></span>Tersedia</div>
+          <div class="legend-dot"><span style="background:var(--border)"></span>Terkunci</div>
+        </div>
+      </div>
+      <div class="zone-tooltip" id="zone-tooltip">
+        <div id="zt-title" style="font-weight:600;font-size:.875rem;margin-bottom:.25rem"></div>
+        <div id="zt-desc" style="font-size:.75rem;color:var(--text2);margin-bottom:.5rem"></div>
+        <div id="zt-xp" style="font-size:.75rem;color:var(--gold)"></div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Misi Selesai</div><div class="stat-val" style="color:var(--green)">3</div></div>
+      <div class="stat-card"><div class="stat-label">Total XP</div><div class="stat-val" style="color:var(--gold)" id="stat-xp">340</div></div>
+      <div class="stat-card"><div class="stat-label">Streak</div><div class="stat-val" style="color:var(--amber)">🔥5</div></div>
+      <div class="stat-card"><div class="stat-label">Akurasi</div><div class="stat-val" style="color:var(--blue)">72%</div></div>
+    </div>
+
+    <!-- Missions -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span class="dot" style="background:var(--blue)"></span>Misi Aktif</div>
+        <button class="see-all" onclick="switchTab('skills')">Lihat Skill ›</button>
+      </div>
+      <div class="mission-grid" id="mission-grid"></div>
+    </div>
+  </div>
+
+  <!-- SKILLS TAB -->
+  <div class="tab-content" id="tab-skills">
+    <div class="section" style="padding-top:1.5rem">
+      <div class="section-header">
+        <div class="section-title"><span class="dot" style="background:var(--purple)"></span>Science Compass</div>
+      </div>
+      <div class="skill-map" id="skill-map"></div>
+    </div>
+  </div>
+
+  <!-- BADGES TAB -->
+  <div class="tab-content" id="tab-badges">
+    <div class="section" style="padding-top:1.5rem">
+      <div class="section-header">
+        <div class="section-title"><span class="dot" style="background:var(--gold)"></span>Koleksi Lencana</div>
+      </div>
+      <div class="badges-grid" id="badges-grid"></div>
+    </div>
+  </div>
+
+  <!-- REPORT TAB -->
+  <div class="tab-content" id="tab-report">
+    <div class="section" style="padding-top:1.5rem">
+      <div class="section-header">
+        <div class="section-title"><span class="dot" style="background:var(--teal)"></span>Laporan Belajar</div>
+      </div>
+      <div class="report-grid">
+        <div class="report-card"><div class="rc-label">Total Sesi Belajar</div><div class="rc-val">12</div><div class="rc-trend">↑ 3 minggu ini</div></div>
+        <div class="report-card"><div class="rc-label">Waktu Belajar</div><div class="rc-val" style="color:var(--blue)">4.5 jam</div><div class="rc-trend">↑ aktif</div></div>
+        <div class="report-card"><div class="rc-label">Kuis Diselesaikan</div><div class="rc-val" style="color:var(--purple)">18</div><div class="rc-trend">↑ 6 minggu ini</div></div>
+        <div class="report-card"><div class="rc-label">Rata-rata Skor</div><div class="rc-val" style="color:var(--green)">78%</div><div class="rc-trend">↑ meningkat</div></div>
+      </div>
+      <div style="margin-top:1.5rem">
+        <div class="section-title" style="margin-bottom:1rem"><span class="dot" style="background:var(--teal)"></span>Progress per Topik</div>
+        <div id="topic-progress-bars"></div>
+      </div>
+      <div style="margin-top:1.5rem">
+        <div class="section-title" style="margin-bottom:1rem"><span class="dot" style="background:var(--amber)"></span>Catatan Guru</div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius2);padding:1.25rem">
+          <p style="font-size:.85rem;color:var(--text2);line-height:1.7">Siswa menunjukkan pemahaman yang baik pada topik Siklus Air dan Pencemaran. Perlu peningkatan pada kemampuan membaca grafik data. Disarankan untuk mengulang Misi Energi Terbarukan.</p>
+          <div style="margin-top:.75rem;font-size:.75rem;color:var(--text3)">— Diperbarui otomatis oleh sistem · Hari ini</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MISSION SCREEN ══════════ -->
+<div id="screen-mission" class="screen">
+  <div class="mission-header">
+    <button class="back-btn" onclick="exitMission()">← Kembali</button>
+    <div style="flex:1">
+      <div id="mission-header-title" style="font-weight:700;font-size:1rem"></div>
+      <div id="mission-header-sub" style="font-size:.75rem;color:var(--text2)"></div>
+    </div>
+    <div class="xp-pill">⭐ <span id="mission-xp-progress">0</span> XP diperoleh</div>
+  </div>
+  <div class="mission-body" id="mission-body-wrap">
+    <!-- Dynamically rendered -->
+  </div>
+</div>
+
+<!-- ══════════ COMPLETION ══════════ -->
+<div class="completion-overlay" id="completion-overlay">
+  <div class="completion-card">
+    <span class="comp-icon" id="comp-icon">🎉</span>
+    <h2 class="comp-title" id="comp-title">Misi Selesai!</h2>
+    <p class="comp-sub" id="comp-sub">Kamu berhasil menyelesaikan misi ini!</p>
+    <div class="comp-xp" id="comp-xp">+120 XP</div>
+    <div class="comp-rewards" id="comp-rewards"></div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="comp-progress" style="width:0%"></div>
+    </div>
+    <p style="font-size:.75rem;color:var(--text3);margin-bottom:1.25rem" id="comp-level-text"></p>
+    <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap">
+      <button class="btn-primary" onclick="finishMission()">Lanjut 🚀</button>
+      <button class="btn-secondary" onclick="closeCompletion()">Kembali ke Dunia</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TOAST ══════════ -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon">✅</span>
+  <span id="toast-msg">Berhasil!</span>
+</div>
+
+<script>
+// ══════════════════════════════════
+// DATA
+// ══════════════════════════════════
+const STATE = {
+  mode:'kids', xp:340, streak:5,
+  completedMissions:new Set(['water-1']),
+  currentMission:null, currentStep:0,
+  missionXP:0, hintsUsed:0,
+  world:'water'
+};
+
+const MISSIONS = {
+  water:[
+    {id:'water-1',title:'Misteri Sungai Hitam',desc:'Sungai di desamu tiba-tiba berwarna hitam! Selidiki penyebabnya dan temukan solusi.',icon:'🌊',xp:100,diff:'easy',topic:'water',done:true,locked:false},
+    {id:'water-2',title:'Detektif Polusi Air',desc:'Ada ikan mati massal di danau. Kumpulkan bukti dan identifikasi sumber pencemaran.',icon:'🐟',xp:150,diff:'medium',topic:'water',done:false,locked:false},
+    {id:'water-3',title:'Siklus Air Hilang',desc:'Kekeringan melanda desa. Pelajari siklus air dan bantu restore ekosistem.',icon:'☁️',xp:200,diff:'hard',topic:'water',done:false,locked:false},
+  ],
+  trash:[
+    {id:'trash-1',title:'Plastik vs Lautan',desc:'Ribuan ton plastik mengancam ekosistem laut. Rancang sistem pengelolaan sampah.',icon:'🌊',xp:120,diff:'easy',topic:'trash',done:false,locked:false},
+    {id:'trash-2',title:'Gunung Sampah Elektronik',desc:'Limbah elektronik mencemari tanah. Selidiki dampaknya dan temukan solusi.',icon:'📱',xp:160,diff:'medium',topic:'trash',done:false,locked:false},
+    {id:'trash-3',title:'Sampah Organik jadi Emas',desc:'Ubah sampah makanan menjadi kompos dan biogas untuk komunitas.',icon:'🌱',xp:180,diff:'medium',topic:'trash',done:false,locked:true},
+  ],
+  energy:[
+    {id:'energy-1',title:'Desa Tanpa Listrik',desc:'Desa terpencil butuh energi. Bandingkan sumber energi dan pilih solusi terbaik.',icon:'💡',xp:130,diff:'easy',topic:'energy',done:false,locked:false},
+    {id:'energy-2',title:'Panel Surya vs Angin',desc:'Bandingkan data output energi surya dan angin untuk keputusan investasi desa.',icon:'☀️',xp:170,diff:'medium',topic:'energy',done:false,locked:false},
+    {id:'energy-3',title:'Jejak Karbon Sekolahmu',desc:'Hitung jejak karbon sekolah dan buat rencana reduksi berbasis data.',icon:'🏫',xp:220,diff:'hard',topic:'energy',done:false,locked:true},
+  ]
+};
+
+const SKILLS = [
+  {id:'observe',name:'Observasi',icon:'👁️',pct:75,color:'var(--blue)'},
+  {id:'data',name:'Membaca Data',icon:'📊',pct:55,color:'var(--purple)'},
+  {id:'cause',name:'Sebab-Akibat',icon:'🔗',pct:80,color:'var(--green)'},
+  {id:'claim',name:'Evaluasi Klaim',icon:'🔍',pct:40,color:'var(--amber)'},
+  {id:'solution',name:'Bangun Solusi',icon:'🔧',pct:60,color:'var(--teal)'},
+  {id:'verify',name:'Verifikasi',icon:'✅',pct:45,color:'var(--red)'},
+];
+
+const BADGES = [
+  {id:'b1',icon:'🕵️',name:'Detektif Sains',unlocked:true},
+  {id:'b2',icon:'💧',name:'Water Hero',unlocked:true},
+  {id:'b3',icon:'🔬',name:'Lab Expert',unlocked:false},
+  {id:'b4',icon:'📊',name:'Data Wizard',unlocked:false},
+  {id:'b5',icon:'♻️',name:'Eco Warrior',unlocked:false},
+  {id:'b6',icon:'⚡',name:'Energy Scout',unlocked:false},
+  {id:'b7',icon:'🌿',name:'Green Mind',unlocked:false},
+  {id:'b8',icon:'🏆',name:'Science Star',unlocked:false},
+];
+
+// MISSION STEPS DATA
+const MISSION_STEPS = {
+  'water-2':[
+    {
+      type:'observe',
+      title:'Amati Situasi',
+      img:'🐟',
+      body:'Ribuan ikan ditemukan mati di Danau Hijau. Penduduk melaporkan bau menyengat dan air berwarna kecoklatan sejak 3 hari lalu. Sebagai ilmuwan muda, kamu harus menyelidiki penyebabnya.',
+      task:'Pilih 2 bukti yang PALING penting untuk diselidiki:',
+      evidences:[
+        {id:'e1',icon:'🏭',title:'Pabrik dekat danau',desc:'Pabrik tekstil baru dibuka 1 bulan lalu di hulu sungai',relevant:true},
+        {id:'e2',icon:'🌧️',title:'Curah hujan tinggi',desc:'Hujan lebat turun seminggu lalu',relevant:false},
+        {id:'e3',icon:'⬛',title:'Warna air hitam',desc:'Air berubah warna gelap di sekitar saluran pabrik',relevant:true},
+        {id:'e4',icon:'🌡️',title:'Suhu air naik 4°C',desc:'Pengukuran menunjukkan kenaikan suhu signifikan',relevant:true},
+      ],
+      hint:'Perhatikan hubungan sebab-akibat: apa yang berubah sebelum ikan mulai mati?',
+      xp:40
+    },
+    {
+      type:'quiz',
+      title:'Analisis Data',
+      img:'📊',
+      body:'Kamu menganalisis sampel air dari 3 titik. Data kadar oksigen terlarut (DO):\n• Titik A (hulu, jauh pabrik): DO = 8.2 mg/L ✓\n• Titik B (dekat pabrik): DO = 1.4 mg/L ⚠️\n• Titik C (hilir): DO = 2.1 mg/L ⚠️\n\nIkan umumnya membutuhkan DO minimal 5 mg/L untuk bertahan hidup.',
+      task:'Apa kesimpulan yang PALING tepat berdasarkan data ini?',
+      options:[
+        {id:'o1',text:'Hujan menyebabkan DO turun drastis di titik B dan C',correct:false},
+        {id:'o2',text:'Pabrik membuang limbah yang menurunkan kadar oksigen di air',correct:true},
+        {id:'o3',text:'Ikan mati karena suhu air terlalu rendah',correct:false},
+        {id:'o4',text:'Titik A juga tercemar karena letaknya di hulu',correct:false},
+      ],
+      hint:'Data menunjukkan pola spasial — di mana kadar DO paling rendah dan apa yang dekat dengan titik itu?',
+      xp:50
+    },
+    {
+      type:'solution',
+      title:'Bangun Solusi',
+      img:'🔧',
+      body:'Kamu telah membuktikan pabrik membuang limbah yang menurunkan oksigen terlarut. Sekarang susun urutan solusi yang tepat dan realistis!',
+      task:'Susun langkah solusi dalam urutan yang benar:',
+      pieces:['Ukur ulang kualitas air','Laporkan ke BPLHD','Pasang IPAL di pabrik','Edukasi komunitas','Monitor bulanan','Audit limbah pabrik'],
+      correctOrder:['Ukur ulang kualitas air','Audit limbah pabrik','Laporkan ke BPLHD','Pasang IPAL di pabrik','Edukasi komunitas','Monitor bulanan'],
+      hint:'Mulai dari pengumpulan bukti → pelaporan → implementasi → pemantauan',
+      xp:60
+    }
+  ]
+};
+
+// AI RESPONSES
+const AI_DB = {
+  hint0:["Coba perhatikan: apa yang berbeda sebelum masalah ini muncul?","Ilmuwan selalu mulai dari observasi! Lihat lebih dekat setiap opsi."],
+  hint1:["Data adalah kunci! Bandingkan angka-angka yang ada.","Perhatikan pola: di mana masalah paling parah? Apa yang dekat sana?"],
+  hint2:["Solusi yang baik harus realistis dan terurut. Mulai dari identifikasi masalah!","Pikirkan: apa yang harus dilakukan DULU sebelum langkah lainnya?"],
+  'apa itu DO':["DO (Dissolved Oxygen) adalah kadar oksigen yang terlarut dalam air. Ikan membutuhkan DO minimal 5 mg/L untuk bertahan. Ketika DO terlalu rendah, ikan tidak bisa bernapas dan mati! 🐟"],
+  'mengapa air hitam':["Air bisa menjadi hitam karena pencemaran bahan kimia, terutama limbah industri yang mengandung senyawa organik tinggi. Proses dekomposisi juga menghabiskan oksigen dalam air! 🧪"],
+  'apa itu IPAL':["IPAL = Instalasi Pengolahan Air Limbah. Ini adalah sistem yang memproses limbah industri sebelum dibuang ke lingkungan, sehingga kadar polutan berkurang hingga aman. ♻️"],
+};
+const AI_QUICK = ["Apa itu DO?","Mengapa air hitam?","Apa itu IPAL?","Beri petunjuk!"];
+
+// ══════════════════════════════════
+// 3D LANDING
+// ══════════════════════════════════
+let landingRenderer, landingScene, landingCamera, landingAnimId;
+function init3DLanding(){
+  const canvas = document.getElementById('canvas-3d');
+  if(!canvas||landingRenderer) return;
+  landingRenderer = new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  landingRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  landingRenderer.setSize(window.innerWidth,window.innerHeight);
+  landingScene = new THREE.Scene();
+  landingCamera = new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,1000);
+  landingCamera.position.set(0,0,5);
+
+  // Ambient + point lights
+  landingScene.add(new THREE.AmbientLight(0x223344,1.5));
+  const ptLight = new THREE.PointLight(0x3b9eff,3,20);
+  ptLight.position.set(4,3,4);
+  landingScene.add(ptLight);
+  const ptLight2 = new THREE.PointLight(0x2dd4bf,2,15);
+  ptLight2.position.set(-3,-2,3);
+  landingScene.add(ptLight2);
+
+  // Planet
+  const sphereGeo = new THREE.SphereGeometry(1.6,64,64);
+  const sphereMat = new THREE.MeshPhongMaterial({color:0x1a4a7a,shininess:40,specular:0x3b9eff});
+  const sphere = new THREE.Mesh(sphereGeo,sphereMat);
+  landingScene.add(sphere);
+
+  // Atmosphere glow
+  const glowGeo = new THREE.SphereGeometry(1.75,32,32);
+  const glowMat = new THREE.MeshPhongMaterial({color:0x3b9eff,transparent:true,opacity:0.08,side:THREE.BackSide});
+  landingScene.add(new THREE.Mesh(glowGeo,glowMat));
+
+  // Continents as raised blobs
+  const continentData=[{x:0.5,y:0.8,z:1.2},{x:-0.9,y:0.3,z:1.1},{x:0.2,y:-0.7,z:1.3},{x:1.1,y:0.1,z:0.9},{x:-0.4,y:1.1,z:0.8}];
+  continentData.forEach(pos=>{
+    const g = new THREE.SphereGeometry(0.28+Math.random()*0.12,12,12);
+    const m = new THREE.MeshPhongMaterial({color:0x22c97a,shininess:10});
+    const c = new THREE.Mesh(g,m);
+    const len = Math.sqrt(pos.x**2+pos.y**2+pos.z**2);
+    c.position.set(pos.x/len*1.55,pos.y/len*1.55,pos.z/len*1.55);
+    landingScene.add(c);
+  });
+
+  // Ring
+  const ringGeo = new THREE.TorusGeometry(2.5,0.03,8,80);
+  const ringMat = new THREE.MeshBasicMaterial({color:0x3b9eff,transparent:true,opacity:0.25});
+  const ring = new THREE.Mesh(ringGeo,ringMat);
+  ring.rotation.x = Math.PI/2.5;
+  landingScene.add(ring);
+
+  // Stars
+  const starGeo = new THREE.BufferGeometry();
+  const starVerts = [];
+  for(let i=0;i<1200;i++){starVerts.push((Math.random()-.5)*400,(Math.random()-.5)*400,(Math.random()-.5)*400);}
+  starGeo.setAttribute('position',new THREE.Float32BufferAttribute(starVerts,3));
+  const starMat = new THREE.PointsMaterial({color:0xaaccff,size:0.6,transparent:true,opacity:.8});
+  landingScene.add(new THREE.Points(starGeo,starMat));
+
+  // Floating particles
+  const particleGeo = new THREE.BufferGeometry();
+  const pVerts=[];
+  for(let i=0;i<60;i++){pVerts.push((Math.random()-.5)*10,(Math.random()-.5)*10,(Math.random()-.5)*6);}
+  particleGeo.setAttribute('position',new THREE.Float32BufferAttribute(pVerts,3));
+  const pMat = new THREE.PointsMaterial({color:0x22c97a,size:0.08,transparent:true,opacity:.9});
+  const particles = new THREE.Points(particleGeo,pMat);
+  landingScene.add(particles);
+
+  let t=0;
+  function animate(){
+    landingAnimId = requestAnimationFrame(animate);
+    t+=0.008;
+    sphere.rotation.y=t*0.3;
+    ring.rotation.z=t*0.1;
+    particles.rotation.y=t*0.05;
+    ptLight.position.x=Math.sin(t)*4;
+    ptLight.position.z=Math.cos(t)*4;
+    landingRenderer.render(landingScene,landingCamera);
+  }
+  animate();
+
+  window.addEventListener('resize',()=>{
+    landingCamera.aspect=window.innerWidth/window.innerHeight;
+    landingCamera.updateProjectionMatrix();
+    landingRenderer.setSize(window.innerWidth,window.innerHeight);
+  });
+}
+
+// ══════════════════════════════════
+// 3D WORLD MAP
+// ══════════════════════════════════
+let worldRenderer, worldScene, worldCamera, worldAnimId;
+let missionNodes=[], raycaster, mouse;
+const WORLD_DATA = {
+  water:{color:0x1a4a7a,nodes:[
+    {x:-2.5,y:0.5,label:'Sungai Hitam',missionId:'water-1',done:true},
+    {x:0.5,y:1.2,label:'Danau Hijau',missionId:'water-2',done:false},
+    {x:2.8,y:-0.8,label:'Hutan Hujan',missionId:'water-3',done:false,locked:true},
+  ]},
+  trash:{color:0x3a2a10,nodes:[
+    {x:-2.2,y:0.8,label:'Pantai Barat',missionId:'trash-1',done:false},
+    {x:0.8,y:-0.5,label:'Kota Industri',missionId:'trash-2',done:false},
+    {x:2.5,y:1,label:'Desa Organik',missionId:'trash-3',done:false,locked:true},
+  ]},
+  energy:{color:0x1a1440,nodes:[
+    {x:-2,y:-0.5,label:'Desa Terpencil',missionId:'energy-1',done:false},
+    {x:0.5,y:1,label:'Padang Savana',missionId:'energy-2',done:false},
+    {x:2.8,y:0,label:'Kota Modern',missionId:'energy-3',done:false,locked:true},
+  ]}
+};
+
+function initWorldMap(){
+  const canvas = document.getElementById('world-canvas');
+  if(!canvas) return;
+  if(worldRenderer){worldRenderer.dispose();}
+
+  worldRenderer = new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  worldRenderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  const wrap = document.getElementById('world-canvas-wrap');
+  worldRenderer.setSize(wrap.clientWidth, wrap.clientHeight-4);
+
+  worldScene = new THREE.Scene();
+  worldCamera = new THREE.PerspectiveCamera(55, wrap.clientWidth/wrap.clientHeight, 0.1, 100);
+  worldCamera.position.set(0,1.5,7);
+
+  worldScene.add(new THREE.AmbientLight(0x334466,2));
+  const dLight = new THREE.DirectionalLight(0x6699ff,2);
+  dLight.position.set(5,5,5);
+  worldScene.add(dLight);
+
+  raycaster = new THREE.Raycaster();
+  mouse = new THREE.Vector2();
+
+  buildWorld(STATE.world);
+
+  let t=0;
+  function loop(){
+    worldAnimId = requestAnimationFrame(loop);
+    t+=0.01;
+    missionNodes.forEach((n,i)=>{
+      if(!n.locked) n.mesh.position.y = n.baseY + Math.sin(t+i)*0.08;
+      if(n.pulse) n.ring.rotation.z = t;
+    });
+    worldRenderer.render(worldScene,worldCamera);
+  }
+  loop();
+
+  canvas.addEventListener('mousemove',e=>{
+    const rect = canvas.getBoundingClientRect();
+    mouse.x=((e.clientX-rect.left)/canvas.clientWidth)*2-1;
+    mouse.y=-((e.clientY-rect.top)/canvas.clientHeight)*2+1;
+    raycaster.setFromCamera(mouse,worldCamera);
+    const hits = raycaster.intersectObjects(missionNodes.map(n=>n.mesh));
+    const tt = document.getElementById('zone-tooltip');
+    if(hits.length>0){
+      const node = missionNodes.find(n=>n.mesh===hits[0].object);
+      if(node){
+        document.getElementById('zt-title').textContent='📍 '+node.label;
+        document.getElementById('zt-desc').textContent=node.locked?'🔒 Selesaikan misi sebelumnya':'Klik untuk mulai misi';
+        document.getElementById('zt-xp').textContent=node.locked?'':'⭐ +'+getXpForMission(node.missionId)+' XP';
+        const x=e.clientX-wrap.getBoundingClientRect().left;
+        const y=e.clientY-wrap.getBoundingClientRect().top;
+        tt.style.left=(x+12)+'px';tt.style.top=(y-40)+'px';
+        tt.classList.add('show');
+      }
+    } else {tt.classList.remove('show');}
+  });
+
+  canvas.addEventListener('click',e=>{
+    raycaster.setFromCamera(mouse,worldCamera);
+    const hits = raycaster.intersectObjects(missionNodes.map(n=>n.mesh));
+    if(hits.length>0){
+      const node = missionNodes.find(n=>n.mesh===hits[0].object);
+      if(node&&!node.locked) openMission(node.missionId);
+      else if(node&&node.locked) showToast('🔒','Selesaikan misi sebelumnya terlebih dahulu!','var(--amber)');
+    }
+  });
+}
+
+function getXpForMission(id){
+  for(const w of Object.values(MISSIONS)) for(const m of w) if(m.id===id) return m.xp;
+  return 100;
+}
+
+function buildWorld(worldId){
+  // Clear
+  while(worldScene.children.length>2) worldScene.remove(worldScene.children[2]);
+  missionNodes=[];
+
+  const wd = WORLD_DATA[worldId];
+
+  // Ground plane
+  const groundGeo = new THREE.PlaneGeometry(18,10);
+  const groundMat = new THREE.MeshPhongMaterial({color:wd.color,shininess:5});
+  const ground = new THREE.Mesh(groundGeo,groundMat);
+  ground.rotation.x=-Math.PI/2;
+  ground.position.y=-1.5;
+  worldScene.add(ground);
+
+  // Grid lines
+  const gridHelper = new THREE.GridHelper(16,16,0x334466,0x334466);
+  gridHelper.position.y=-1.49;
+  gridHelper.material.opacity=0.2;
+  gridHelper.material.transparent=true;
+  worldScene.add(gridHelper);
+
+  // Path connections
+  const nodes = wd.nodes;
+  for(let i=0;i<nodes.length-1;i++){
+    const p1=new THREE.Vector3(nodes[i].x,-.3,nodes[i].y||0);
+    const p2=new THREE.Vector3(nodes[i+1].x,-.3,nodes[i+1].y||0);
+    const curve = new THREE.LineCurve3(p1,p2);
+    const pts = curve.getPoints(10);
+    const pathGeo = new THREE.BufferGeometry().setFromPoints(pts);
+    const pathMat = new THREE.LineDashedMaterial({color:0x334466,dashSize:.3,gapSize:.2});
+    const line = new THREE.Line(pathGeo,pathMat);
+    line.computeLineDistances();
+    worldScene.add(line);
+  }
+
+  // Mission nodes
+  nodes.forEach((nd,i)=>{
+    const color = nd.done?0x22c97a:nd.locked?0x334466:0x3b9eff;
+    const geo = new THREE.CylinderGeometry(0.35,0.25,0.2,8);
+    const mat = new THREE.MeshPhongMaterial({color,shininess:60,emissive:nd.done?0x0d3d1e:nd.locked?0:0x0f2e55,emissiveIntensity:.4});
+    const mesh = new THREE.Mesh(geo,mat);
+    mesh.position.set(nd.x,0,i*1.2-1);
+    worldScene.add(mesh);
+
+    // Icon plane (number)
+    const iconGeo = new THREE.SphereGeometry(0.22,16,16);
+    const iconMat = new THREE.MeshBasicMaterial({color:nd.done?0x22c97a:nd.locked?0x5c7a9e:0x3b9eff,transparent:true,opacity:nd.locked?.4:1});
+    const icon = new THREE.Mesh(iconGeo,iconMat);
+    icon.position.set(nd.x,0.4,i*1.2-1);
+    worldScene.add(icon);
+
+    // Pulse ring
+    const ringGeo = new THREE.TorusGeometry(0.5,0.03,8,32);
+    const ringMat = new THREE.MeshBasicMaterial({color:nd.done?0x22c97a:0x3b9eff,transparent:true,opacity:nd.locked?0:.5});
+    const ring = new THREE.Mesh(ringGeo,ringMat);
+    ring.position.set(nd.x,-1.4,i*1.2-1);
+    ring.rotation.x=Math.PI/2;
+    worldScene.add(ring);
+
+    missionNodes.push({mesh:icon,ring,label:nd.label,missionId:nd.missionId,locked:!!nd.locked,done:!!nd.done,baseY:0.4,pulse:!nd.locked&&!nd.done});
+  });
+
+  // Stars / atmosphere
+  const starGeo = new THREE.BufferGeometry();
+  const sv=[];
+  for(let i=0;i<300;i++){sv.push((Math.random()-.5)*60,(Math.random()-.5)*40,(Math.random()-.5)*30-10);}
+  starGeo.setAttribute('position',new THREE.Float32BufferAttribute(sv,3));
+  worldScene.add(new THREE.Points(starGeo,new THREE.PointsMaterial({color:0x8899bb,size:0.15,transparent:true,opacity:.6})));
+}
+
+// ══════════════════════════════════
+// SCREEN / NAV
+// ══════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  if(id==='landing') init3DLanding();
+  if(id==='app') setTimeout(initWorldMap,100);
+}
+
+function startApp(mode){
+  STATE.mode=mode;
+  document.getElementById('avatar-icon').textContent=mode==='kids'?'🧒':'🧑';
+  renderMissions();
+  renderSkills();
+  renderBadges();
+  renderReport();
+  showScreen('app');
+  setTimeout(initWorldMap,200);
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('nav-'+tab).classList.add('active');
+}
+
+function selectWorld(w, el){
+  STATE.world=w;
+  document.querySelectorAll('.world-pill').forEach(p=>{p.classList.remove('active','water','trash','energy');});
+  el.classList.add('active',w);
+  const titles={water:'💧 Dunia Air',trash:'♻️ Dunia Sampah',energy:'⚡ Dunia Energi'};
+  document.getElementById('world-title').textContent=titles[w];
+  buildWorld(w);
+  renderMissions();
+}
+
+// ══════════════════════════════════
+// RENDER MISSIONS
+// ══════════════════════════════════
+function renderMissions(){
+  const grid = document.getElementById('mission-grid');
+  if(!grid)return;
+  grid.innerHTML='';
+  const list = MISSIONS[STATE.world]||MISSIONS.water;
+  list.forEach(m=>{
+    const topicColor={water:'topic-water',trash:'topic-trash',energy:'topic-energy'}[m.topic];
+    const diffColor={easy:'diff-easy',medium:'diff-medium',hard:'diff-hard'}[m.diff];
+    const diffText={easy:'Mudah',medium:'Sedang',hard:'Sulit'}[m.diff];
+    const card=document.createElement('div');
+    card.className='mission-card'+(m.locked?' mc-locked':'');
+    card.innerHTML=`
+      <div class="mc-topic-badge ${topicColor}">${m.icon} ${m.topic==='water'?'Air':m.topic==='trash'?'Sampah':'Energi'}</div>
+      <div class="mc-title">${m.title}</div>
+      <div class="mc-desc">${m.desc}</div>
+      <div class="mc-footer">
+        <div class="mc-xp">⭐ ${m.xp} XP</div>
+        <div class="mc-diff ${diffColor}">${diffText}</div>
+      </div>
+      <div class="mc-progress"><div class="mc-progress-fill" style="width:${m.done?100:0}%;background:${m.done?'var(--green)':'var(--blue)'}"></div></div>
+    `;
+    if(!m.locked) card.onclick=()=>openMission(m.id);
+    grid.appendChild(card);
+  });
+}
+
+function renderSkills(){
+  const el = document.getElementById('skill-map');
+  if(!el)return;
+  el.innerHTML=SKILLS.map(s=>`
+    <div class="skill-card">
+      <div class="skill-icon">${s.icon}</div>
+      <div class="skill-name">${s.name}</div>
+      <div class="skill-bar-wrap"><div class="skill-bar-fill" style="width:${s.pct}%;background:${s.color}"></div></div>
+      <div class="skill-pct">${s.pct}%</div>
+    </div>
+  `).join('');
+}
+
+function renderBadges(){
+  const el=document.getElementById('badges-grid');
+  if(!el)return;
+  el.innerHTML=BADGES.map(b=>`
+    <div class="badge-item${b.unlocked?'':' locked'}">
+      <span class="badge-icon">${b.icon}</span>
+      <div class="badge-name">${b.name}</div>
+    </div>
+  `).join('');
+}
+
+function renderReport(){
+  const el=document.getElementById('topic-progress-bars');
+  if(!el)return;
+  const topics=[{name:'Siklus & Polusi Air',pct:65,color:'var(--blue)'},{name:'Pengelolaan Sampah',pct:30,color:'var(--amber)'},{name:'Energi Terbarukan',pct:20,color:'var(--purple)'}];
+  el.innerHTML=topics.map(t=>`
+    <div style="margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.4rem"><span>${t.name}</span><span style="color:var(--text3)">${t.pct}%</span></div>
+      <div style="background:var(--bg3);border-radius:4px;height:8px;overflow:hidden"><div style="width:${t.pct}%;height:100%;border-radius:4px;background:${t.color};transition:.5s"></div></div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════
+// MISSION ENGINE
+// ══════════════════════════════════
+function openMission(id){
+  STATE.currentMission=id;
+  STATE.currentStep=0;
+  STATE.missionXP=0;
+  STATE.hintsUsed=0;
+
+  // Find mission data
+  let mData=null;
+  for(const w of Object.values(MISSIONS)) for(const m of w) if(m.id===id) {mData=m;break;}
+  if(!mData) return;
+
+  document.getElementById('mission-header-title').textContent=mData.icon+' '+mData.title;
+  document.getElementById('mission-header-sub').textContent=`⭐ ${mData.xp} XP • ${STATE.mode==='kids'?'Kids':'Teen'} Mode`;
+  document.getElementById('mission-xp-progress').textContent='0';
+
+  showScreen('mission');
+  renderMissionStep();
+}
+
+function renderMissionStep(){
+  const id = STATE.currentMission;
+  const steps = MISSION_STEPS[id];
+  if(!steps){
+    // Generic mission for unlisted ones
+    renderGenericMission();
+    return;
+  }
+  const step = steps[STATE.currentStep];
+  const wrap = document.getElementById('mission-body-wrap');
+
+  // Step indicator
+  const dots = steps.map((_,i)=>`<div class="step-dot${i<STATE.currentStep?' done':i===STATE.currentStep?' active':''}"></div>`).join('');
+
+  let content='';
+  if(step.type==='observe') content=renderObserveStep(step);
+  else if(step.type==='quiz') content=renderQuizStep(step);
+  else if(step.type==='solution') content=renderSolutionStep(step);
+
+  wrap.innerHTML=`
+    <div class="step-indicator">${dots}<span style="font-size:.75rem;color:var(--text3);margin-left:auto">Langkah ${STATE.currentStep+1}/${steps.length}</span></div>
+    ${content}
+    ${renderAIGuide(step)}
+  `;
+  bindStepEvents(step);
+}
+
+function renderObserveStep(step){
+  return `
+    <div class="mission-scene">
+      <span class="scene-img">${step.img}</span>
+      <div class="scene-title">${step.title}</div>
+      <div class="scene-body">${step.body}</div>
+    </div>
+    <div style="font-size:.9rem;font-weight:600;margin-bottom:.75rem">🎯 ${step.task}</div>
+    <div class="evidence-grid" id="evidence-grid">
+      ${step.evidences.map(e=>`
+        <div class="evidence-card" data-id="${e.id}" data-rel="${e.relevant}" onclick="selectEvidence(this)">
+          <span class="ev-icon">${e.icon}</span>
+          <div class="ev-title">${e.title}</div>
+          <div class="ev-desc">${e.desc}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="hint-box" id="hint-box">💡 <strong>Petunjuk AI:</strong> ${step.hint}</div>
+    <div class="action-row" style="margin-top:1rem">
+      <button class="btn-primary" id="next-btn" onclick="confirmObserve()" disabled style="opacity:.4">Konfirmasi Pilihan →</button>
+      <button class="btn-hint" onclick="showHint()">💡 Petunjuk</button>
+    </div>
+  `;
+}
+
+function renderQuizStep(step){
+  return `
+    <div class="mission-scene">
+      <span class="scene-img">${step.img}</span>
+      <div class="scene-title">${step.title}</div>
+      <div class="scene-body" style="white-space:pre-line">${step.body}</div>
+    </div>
+    <div style="font-size:.9rem;font-weight:600;margin-bottom:.75rem">❓ ${step.task}</div>
+    <div class="quiz-options" id="quiz-opts">
+      ${step.options.map((o,i)=>`
+        <div class="quiz-opt" data-correct="${o.correct}" onclick="selectQuiz(this)">
+          <span class="opt-letter">${'ABCD'[i]}</span>
+          ${o.text}
+        </div>
+      `).join('')}
+    </div>
+    <div class="hint-box" id="hint-box">💡 <strong>Petunjuk AI:</strong> ${step.hint}</div>
+    <div class="action-row" style="margin-top:1rem">
+      <button class="btn-hint" onclick="showHint()">💡 Petunjuk</button>
+    </div>
+  `;
+}
+
+function renderSolutionStep(step){
+  const slots = step.correctOrder.map((_,i)=>`<div class="s-slot" id="slot-${i}" data-filled="" onclick="removeFromSlot(${i})">+ Tambah langkah</div>`).join('<span class="arrow-icon">→</span>');
+  const pieces = step.pieces.map((p,i)=>`<div class="s-piece" id="piece-${i}" onclick="addToSlot(this,'${p}')">${p}</div>`).join('');
+  return `
+    <div class="mission-scene">
+      <span class="scene-img">${step.img}</span>
+      <div class="scene-title">${step.title}</div>
+      <div class="scene-body">${step.body}</div>
+    </div>
+    <div style="font-size:.9rem;font-weight:600;margin-bottom:.5rem">🔧 ${step.task}</div>
+    <div class="solution-canvas">
+      <div class="solution-slots" id="solution-slots">${slots}</div>
+    </div>
+    <div style="font-size:.8rem;color:var(--text3);margin-bottom:.5rem">Pilih dari langkah berikut:</div>
+    <div class="solution-pieces" id="solution-pieces">${pieces}</div>
+    <div class="hint-box" id="hint-box">💡 <strong>Petunjuk AI:</strong> ${step.hint}</div>
+    <div class="action-row" style="margin-top:1rem">
+      <button class="btn-primary" id="verify-btn" onclick="verifySolution()" disabled style="opacity:.4">Verifikasi Solusi ✓</button>
+      <button class="btn-secondary" onclick="clearSlots()">Reset</button>
+      <button class="btn-hint" onclick="showHint()">💡 Petunjuk</button>
+    </div>
+  `;
+}
+
+function renderAIGuide(step){
+  const welcome = STATE.mode==='kids'
+    ? `Hei! Aku SIKI, asisten sainsmu! 🤖 Aku di sini untuk membantu kamu berpikir — bukan memberi jawaban langsung ya!`
+    : `Selamat datang di misi ini. Gunakan pendekatan ilmiah: observasi → data → analisis → solusi. Aku siap membantu kamu berpikir kritis.`;
+  return `
+    <div class="ai-guide-wrap">
+      <div class="ai-guide-header">
+        <div class="ai-avatar">🤖</div>
+        <span>SIKI — AI Science Guide</span>
+        <span style="margin-left:auto;font-size:.7rem;color:var(--green)">● Online</span>
+      </div>
+      <div class="ai-msgs" id="ai-msgs">
+        <div class="ai-msg">${welcome}</div>
+      </div>
+      <div class="ai-quick-btns">
+        ${AI_QUICK.map(q=>`<button class="ai-qbtn" onclick="askAI('${q}')">${q}</button>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ── STEP EVENTS ──
+let selectedEvidences=[];
+function bindStepEvents(step){}
+
+function selectEvidence(el){
+  const id=el.dataset.id;
+  if(el.classList.contains('selected')){
+    el.classList.remove('selected');
+    selectedEvidences=selectedEvidences.filter(e=>e!==id);
+  } else {
+    if(selectedEvidences.length>=2){showToast('⚠️','Pilih maksimal 2 bukti!','var(--amber)');return;}
+    el.classList.add('selected');
+    selectedEvidences.push(id);
+  }
+  const btn=document.getElementById('next-btn');
+  if(btn){btn.disabled=selectedEvidences.length<2;btn.style.opacity=selectedEvidences.length<2?.4:1;}
+}
+
+function confirmObserve(){
+  const steps=MISSION_STEPS[STATE.currentMission];
+  const step=steps[STATE.currentStep];
+  const correctIds=step.evidences.filter(e=>e.relevant).map(e=>e.id);
+  const allCorrect=selectedEvidences.every(id=>correctIds.includes(id))&&selectedEvidences.length===2;
+  selectedEvidences=[];
+  if(allCorrect){
+    addMissionXP(step.xp);
+    showToast('✅','Pilihan tepat! Kamu menemukan bukti kunci!','var(--green)');
+    aiSay('Bagus sekali! Kamu berhasil mengidentifikasi bukti yang relevan. Sekarang mari kita analisis data lebih dalam! 🎯');
+    setTimeout(nextStep,1200);
+  } else {
+    document.querySelectorAll('.evidence-card').forEach(c=>{
+      if(c.classList.contains('selected')&&!correctIds.includes(c.dataset.id)){
+        c.classList.remove('selected');c.classList.add('wrong');
+        setTimeout(()=>c.classList.remove('wrong'),600);
+      }
+    });
+    selectedEvidences=[];
+    const btn=document.getElementById('next-btn');
+    if(btn){btn.disabled=true;btn.style.opacity=.4;}
+    aiSay('Hmm, coba pikirkan lagi. Perhatikan hubungan waktu — kapan masalah mulai terjadi dan apa yang baru berubah? 🤔');
+  }
+}
+
+function selectQuiz(el){
+  if(document.querySelector('.quiz-opt.correct,.quiz-opt.wrong')) return;
+  const correct=el.dataset.correct==='true';
+  el.classList.add(correct?'correct':'wrong');
+  if(correct){
+    const steps=MISSION_STEPS[STATE.currentMission];
+    addMissionXP(steps[STATE.currentStep].xp);
+    showToast('✅','Benar! Analisis datamu tepat!','var(--green)');
+    aiSay('Luar biasa! Kamu berhasil membaca pola data dan menarik kesimpulan yang tepat. Ini adalah inti dari berpikir ilmiah! 🏆');
+    setTimeout(nextStep,1500);
+  } else {
+    showToast('❌','Coba pikirkan lagi!','var(--red)');
+    aiSay('Belum tepat. Coba perhatikan lagi: di titik mana kadar DO paling rendah, dan apa yang ada di dekat titik itu? 🔍');
+    setTimeout(()=>el.classList.remove('wrong'),800);
+  }
+}
+
+// Solution builder
+let slotData=[];
+function addToSlot(pieceEl,label){
+  if(pieceEl.classList.contains('used')) return;
+  const slots=document.querySelectorAll('.s-slot');
+  const emptySlot=[...slots].find(s=>!s.dataset.filled);
+  if(!emptySlot){showToast('⚠️','Semua slot sudah terisi!','var(--amber)');return;}
+  emptySlot.textContent=label;
+  emptySlot.dataset.filled=label;
+  emptySlot.classList.add('filled');
+  pieceEl.classList.add('used');
+  slotData.push({slot:emptySlot,piece:pieceEl,label});
+  const filledCount=[...slots].filter(s=>s.dataset.filled).length;
+  const verBtn=document.getElementById('verify-btn');
+  const steps=MISSION_STEPS[STATE.currentMission];
+  if(verBtn&&filledCount===steps[STATE.currentStep].correctOrder.length){
+    verBtn.disabled=false;verBtn.style.opacity=1;
+  }
+}
+
+function removeFromSlot(i){
+  const slot=document.getElementById('slot-'+i);
+  if(!slot||!slot.dataset.filled) return;
+  const label=slot.dataset.filled;
+  slot.textContent='+ Tambah langkah';
+  slot.dataset.filled='';
+  slot.classList.remove('filled');
+  slotData=slotData.filter(s=>s.slot!==slot);
+  const verBtn=document.getElementById('verify-btn');
+  if(verBtn){verBtn.disabled=true;verBtn.style.opacity=.4;}
+  // Re-enable piece
+  document.querySelectorAll('.s-piece').forEach(p=>{if(p.textContent===label) p.classList.remove('used');});
+}
+
+function clearSlots(){
+  document.querySelectorAll('.s-slot').forEach((s,i)=>{s.textContent='+ Tambah langkah';s.dataset.filled='';s.classList.remove('filled');});
+  document.querySelectorAll('.s-piece').forEach(p=>p.classList.remove('used'));
+  slotData=[];
+  const verBtn=document.getElementById('verify-btn');
+  if(verBtn){verBtn.disabled=true;verBtn.style.opacity=.4;}
+}
+
+function verifySolution(){
+  const steps=MISSION_STEPS[STATE.currentMission];
+  const step=steps[STATE.currentStep];
+  const slots=[...document.querySelectorAll('.s-slot')];
+  const userOrder=slots.map(s=>s.dataset.filled);
+  const correct=JSON.stringify(userOrder)===JSON.stringify(step.correctOrder);
+  if(correct){
+    addMissionXP(step.xp);
+    aiSay('SEMPURNA! 🎉 Solusi yang kamu susun sudah benar dan sistematis! Kamu benar-benar berpikir seperti seorang ilmuwan lingkungan!');
+    setTimeout(()=>showCompletion(),1000);
+  } else {
+    // Check partial
+    const matchCount=userOrder.filter((u,i)=>u===step.correctOrder[i]).length;
+    showToast('🔄',`${matchCount}/${step.correctOrder.length} langkah sudah di posisi benar. Coba susun ulang!`,'var(--amber)');
+    aiSay(`Hampir! ${matchCount} langkah sudah benar. Pikirkan: apa yang harus dilakukan sebelum melaporkan ke pihak berwenang? 💭`);
+    clearSlots();
+  }
+}
+
+function addMissionXP(xp){
+  const bonus = STATE.hintsUsed===0?Math.round(xp*.2):0;
+  STATE.missionXP+=xp+bonus;
+  document.getElementById('mission-xp-progress').textContent=STATE.missionXP;
+}
+
+function nextStep(){
+  const steps=MISSION_STEPS[STATE.currentMission];
+  if(STATE.currentStep<steps.length-1){
+    STATE.currentStep++;
+    renderMissionStep();
+  } else {
+    showCompletion();
+  }
+}
+
+function showHint(){
+  const box=document.getElementById('hint-box');
+  if(box){box.classList.add('show');STATE.hintsUsed++;}
+}
+
+// ── AI GUIDE ──
+function askAI(q){
+  const lower=q.toLowerCase().replace('?','');
+  const resp=AI_DB[lower]||AI_DB['hint'+Math.min(STATE.currentStep,2)];
+  const msg=Array.isArray(resp)?resp[Math.floor(Math.random()*resp.length)]:resp;
+  showUserMsg(q);
+  setTimeout(()=>aiSay(msg),600);
+}
+
+function showUserMsg(txt){
+  const msgs=document.getElementById('ai-msgs');
+  if(!msgs)return;
+  const div=document.createElement('div');
+  div.className='ai-msg user-msg';div.textContent=txt;
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+}
+
+function aiSay(txt){
+  const msgs=document.getElementById('ai-msgs');
+  if(!msgs)return;
+  const typing=document.createElement('div');
+  typing.className='ai-typing';
+  typing.innerHTML='<span></span><span></span><span></span>';
+  msgs.appendChild(typing);msgs.scrollTop=msgs.scrollHeight;
+  setTimeout(()=>{
+    msgs.removeChild(typing);
+    const div=document.createElement('div');
+    div.className='ai-msg';div.textContent=txt;
+    msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+  },800);
+}
+
+// ── GENERIC MISSION ──
+function renderGenericMission(){
+  const wrap=document.getElementById('mission-body-wrap');
+  wrap.innerHTML=`
+    <div style="text-align:center;padding:3rem 1rem">
+      <div style="font-size:4rem;margin-bottom:1rem">🚀</div>
+      <h2 style="margin-bottom:.75rem">Misi Sedang Dikembangkan</h2>
+      <p style="color:var(--text2);margin-bottom:2rem">Misi ini akan segera tersedia. Selesaikan misi 'Detektif Polusi Air' untuk memulai misi lanjutan!</p>
+      <button class="btn-primary" onclick="exitMission()">← Kembali ke Dunia</button>
+    </div>
+  `;
+}
+
+// ── COMPLETION ──
+function showCompletion(){
+  const overlay=document.getElementById('completion-overlay');
+  const xp=STATE.missionXP;
+  STATE.xp+=xp;
+  updateXPDisplay();
+
+  document.getElementById('comp-icon').textContent='🎉';
+  document.getElementById('comp-title').textContent='Misi Berhasil!';
+  document.getElementById('comp-sub').textContent='Kamu berhasil menyelesaikan investigasi ilmiah! Terus tingkatkan kemampuan sainsmu.';
+  document.getElementById('comp-xp').textContent='+'+xp+' XP';
+  document.getElementById('comp-rewards').innerHTML='<span class="comp-badge">🏅 Bukti Kunci</span><span class="comp-badge">🔬 Analisis Data</span><span class="comp-badge">🔧 Pembangun Solusi</span>';
+  const pct=Math.min(100,Math.round((STATE.xp%500)/500*100));
+  document.getElementById('comp-level-text').textContent=`Level Progress: ${pct}% menuju level berikutnya`;
+  overlay.classList.add('show');
+  setTimeout(()=>document.getElementById('comp-progress').style.width=pct+'%',300);
+
+  // Mark mission done
+  STATE.completedMissions.add(STATE.currentMission);
+  MISSIONS[STATE.world].forEach(m=>{if(m.id===STATE.currentMission) m.done=true;});
+  renderMissions();
+  buildWorld(STATE.world);
+  showToast('🏆','Lencana baru terbuka! Cek halaman Lencana.','var(--gold)');
+}
+
+function closeCompletion(){
+  document.getElementById('completion-overlay').classList.remove('show');
+  exitMission();
+}
+function finishMission(){
+  document.getElementById('completion-overlay').classList.remove('show');
+  exitMission();
+  showToast('🚀','Selamat! Lanjutkan misi berikutnya!','var(--green)');
+}
+
+function exitMission(){
+  showScreen('app');
+  switchTab('world');
+  setTimeout(initWorldMap,150);
+}
+
+// ── UI HELPERS ──
+function updateXPDisplay(){
+  const xpEls=document.querySelectorAll('#xp-display,#stat-xp');
+  xpEls.forEach(el=>{el.textContent=STATE.xp;el.style.animation='none';requestAnimationFrame(()=>{el.style.animation='xpPop .4s';});});
+}
+
+function showToast(icon,msg,color='var(--green)'){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-icon').textContent=icon;
+  document.getElementById('toast-msg').textContent=msg;
+  t.style.borderColor=color;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ══════════════════════════════════
+// INIT
+// ══════════════════════════════════
+window.onload=()=>{
+  init3DLanding();
+};
+</script>
+</body>
 </html>
