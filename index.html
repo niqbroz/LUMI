@@ -1,759 +1,2229 @@
 <!doctype html>
-<html lang="en">
- <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LUMI Science Explorer</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;family=Fredoka+One&amp;display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Nunito', sans-serif; }
-    .font-display { font-family: 'Fredoka One', cursive; }
-    .view { display: none; }
-    .view.active { display: block; }
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LUMI Science Explorer</title>
+    <style>
+      :root {
+        --bg: #0a0a1a;
+        --panel: #17172b;
+        --panel-2: #1f2140;
+        --line: rgba(255, 255, 255, 0.1);
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --green: #10b981;
+        --cyan: #22d3ee;
+        --yellow: #fbbf24;
+        --red: #ef4444;
+        --orange: #f97316;
+        --blue: #3b82f6;
+        --pink: #ec4899;
+        --violet: #8b5cf6;
+      }
 
-    .roblox-btn {
-      position: relative; border-radius: 12px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.05em; border: 3px solid rgba(255,255,255,0.2);
-      box-shadow: 0 6px 0 rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.2);
-      transition: transform 0.1s, box-shadow 0.1s;
-    }
-    .roblox-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 0 rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.2); }
-    .roblox-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.2); }
+      * {
+        box-sizing: border-box;
+      }
 
-    .world-card {
-      border-radius: 16px; border: 3px solid rgba(255,255,255,0.1); overflow: hidden;
-      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; background: #1a1a2e;
-    }
-    .world-card:hover { transform: translateY(-6px) scale(1.02); border-color: #10b981; box-shadow: 0 0 20px rgba(16,185,129,0.4), 0 12px 40px rgba(0,0,0,0.5); }
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+      }
 
-    .xp-bar { height: 20px; border-radius: 10px; background: #1e1e3f; border: 2px solid #333; overflow: hidden; }
-    .xp-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, #10b981, #06d6a0); transition: width 0.6s ease; }
+      body {
+        color: var(--text);
+        font-family: "Nunito", "Trebuchet MS", system-ui, sans-serif;
+        background: linear-gradient(180deg, #0a0a1a 0%, #15162b 100%);
+        overflow-x: hidden;
+      }
 
-    .level-badge { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #f59e0b); border: 3px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; color: #1a1a2e; box-shadow: 0 0 12px rgba(251,191,36,0.5); }
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
 
-    .mission-card { border-radius: 14px; border: 2px solid rgba(255,255,255,0.08); transition: transform 0.2s, border-color 0.2s; }
-    .mission-card:hover { transform: translateY(-3px); border-color: rgba(16,185,129,0.5); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+      button {
+        color: inherit;
+        cursor: pointer;
+      }
 
-    .game-panel { background: linear-gradient(180deg, #16162a 0%, #1a1a2e 100%); border: 2px solid rgba(255,255,255,0.08); border-radius: 16px; }
+      .font-display {
+        font-family: "Trebuchet MS", "Nunito", system-ui, sans-serif;
+        font-weight: 900;
+        letter-spacing: 0;
+      }
 
-    .slider-track { -webkit-appearance: none; appearance: none; height: 10px; border-radius: 5px; background: #1e1e3f; border: 2px solid #333; outline: none; }
-    .slider-track::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #06d6a0); cursor: pointer; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+      #starfield {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+      }
 
-    .step-dot { width: 100%; height: 10px; border-radius: 5px; border: 2px solid #333; }
-    .step-dot.completed { background: linear-gradient(90deg, #10b981, #06d6a0); border-color: #10b981; }
-    .step-dot.current { background: #10b981; border-color: #34d399; box-shadow: 0 0 8px #10b981; }
-    .step-dot.upcoming { background: #1e1e3f; }
+      .star {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        border-radius: 50%;
+        background: #fff;
+        opacity: 0.55;
+        animation: twinkle linear infinite;
+      }
 
-    .currency-display { background: linear-gradient(135deg, #1e1e3f, #16162a); border: 2px solid #fbbf24; border-radius: 20px; padding: 4px 12px; }
+      @keyframes twinkle {
+        0%,
+        100% {
+          opacity: 0.75;
+          transform: scale(1);
+        }
 
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    .fade-in { animation: fadeIn 0.3s ease forwards; }
-    @keyframes slideUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
-    .slide-up { animation: slideUp 0.4s ease forwards; }
+        50% {
+          opacity: 0.2;
+          transform: scale(0.5);
+        }
+      }
 
-    @keyframes xpPop { 0% { transform: scale(0) translateY(0); opacity:0; } 50% { transform: scale(1.3) translateY(-10px); opacity:1; } 100% { transform: scale(1) translateY(-20px); opacity:0; } }
-    .xp-popup { animation: xpPop 1.2s ease forwards; position: fixed; top: 80px; right: 20px; z-index: 100; pointer-events: none; }
+      .shell {
+        width: min(100% - 24px, 1040px);
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 18px 0 96px;
+      }
 
-    /* Lumi avatar animations */
-    @keyframes lumiFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-    @keyframes lumiBounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
-    @keyframes lumiWave { 0% { transform: rotate(0deg); } 15% { transform: rotate(12deg); } 30% { transform: rotate(-8deg); } 45% { transform: rotate(10deg); } 60% { transform: rotate(-5deg); } 75% { transform: rotate(6deg); } 100% { transform: rotate(0deg); } }
-    @keyframes lumiPulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(16,185,129,0.3)); } 50% { filter: drop-shadow(0 0 20px rgba(16,185,129,0.7)); } }
-    @keyframes lumiTalk { 0%,100% { transform: translateY(0) scale(1); } 25% { transform: translateY(-3px) scale(1.03); } 75% { transform: translateY(2px) scale(0.98); } }
+      .view {
+        display: none;
+      }
 
-    .lumi-avatar { transition: all 0.3s ease; }
-    .lumi-avatar.floating { animation: lumiFloat 3s ease-in-out infinite, lumiPulse 4s ease-in-out infinite; }
-    .lumi-avatar.excited { animation: lumiBounce 0.6s ease 3, lumiPulse 4s ease-in-out infinite; }
-    .lumi-avatar.waving { animation: lumiWave 1.5s ease-in-out infinite, lumiPulse 4s ease-in-out infinite; }
-    .lumi-avatar.talking { animation: lumiTalk 0.8s ease-in-out infinite, lumiPulse 4s ease-in-out infinite; }
+      .view.active {
+        display: block;
+        animation: fade-in 0.25s ease both;
+      }
 
-    .lumi-speech { position: relative; background: #1e293b; border: 2px solid #10b981; border-radius: 12px; padding: 10px 14px; margin-left: 8px; max-width: 280px; }
-    .lumi-speech::before { content:''; position: absolute; left: -8px; top: 16px; border: 6px solid transparent; border-right-color: #10b981; }
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
 
-    .phet-canvas { background: linear-gradient(180deg, #0f172a, #1e293b); border: 3px solid #334155; border-radius: 16px; min-height: 180px; position: relative; overflow: hidden; }
-    .phet-particle { position: absolute; border-radius: 50%; transition: all 0.4s ease; }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-    .quiz-option { border: 2px solid #334155; border-radius: 12px; padding: 12px 16px; cursor: pointer; transition: all 0.2s; }
-    .quiz-option:hover { border-color: #10b981; background: rgba(16,185,129,0.1); }
-    .quiz-option.selected { border-color: #10b981; background: rgba(16,185,129,0.15); }
-    .quiz-option.correct { border-color: #10b981; background: rgba(16,185,129,0.2); }
-    .quiz-option.wrong { border-color: #ef4444; background: rgba(239,68,68,0.15); }
+      .hud {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
 
-    .validation-error { color: #f87171; font-size: 12px; margin-top: 4px; display: none; }
-    .validation-error.show { display: block; animation: fadeIn 0.2s ease; }
+      .hud.hidden,
+      .stepbar.hidden {
+        display: none;
+      }
 
-    .level-option { border: 3px solid #334155; border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.2s; text-align: center; }
-    .level-option:hover { border-color: #10b981; transform: translateY(-4px); }
-    .level-option.selected { border-color: #10b981; background: rgba(16,185,129,0.1); box-shadow: 0 0 20px rgba(16,185,129,0.3); }
+      .hud-left,
+      .hud-actions,
+      .lumi-row,
+      .stepbar-top,
+      .result-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
 
-    #starfield { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
-    .star { position: absolute; border-radius: 50%; background: white; animation: twinkle linear infinite; }
-    @keyframes twinkle { 0%,100%{opacity:.8;transform:scale(1)} 50%{opacity:.2;transform:scale(.5)} }
+      .level-badge {
+        display: grid;
+        place-items: center;
+        width: 48px;
+        height: 48px;
+        border: 3px solid #fff;
+        border-radius: 50%;
+        color: #1a1a2e;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        box-shadow: 0 0 14px rgba(251, 191, 36, 0.5);
+        font-weight: 900;
+      }
 
-    #lumi-float { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 400; }
-    .lumi-float-btn { width: 64px; height: 64px; border-radius: 50%; background: transparent; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(16,185,129,0.5); cursor: pointer; border: 3px solid rgba(16,185,129,0.5); transition: all 0.2s; overflow: hidden; }
-    .lumi-float-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(16,185,129,0.7); }
-    .lumi-float-btn img { width: 100%; height: 100%; object-fit: cover; }
-    .lumi-chat-panel { position: absolute; bottom: 74px; right: 0; width: 280px; background: #1a1a2e; border: 2px solid #10b981; border-radius: 16px; overflow: hidden; display: none; }
-    .lumi-chat-panel.open { display: block; animation: fadeIn 0.25s ease; }
-    .chat-msgs { padding: .75rem; height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: .5rem; }
-    .chat-msg { padding: .5rem .8rem; border-radius: 12px; font-size: .8rem; line-height: 1.4; max-width: 90%; }
-    .chat-msg.lumi { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); align-self: flex-start; }
-    .chat-quickies { display: flex; flex-wrap: wrap; gap: .4rem; padding: 0 .75rem .75rem; }
-    .chat-q-btn { font-size: .7rem; padding: .3rem .6rem; border-radius: 50px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #10b981; cursor: pointer; font-weight: 700; transition: all .2s; }
-    .chat-q-btn:hover { background: rgba(16,185,129,0.2); }
+      .hud-title {
+        margin: 0;
+        color: var(--green);
+        font-size: 26px;
+        line-height: 1;
+      }
 
-    .arg-step { border-left: 3px solid #334155; padding-left: 12px; margin-bottom: 12px; transition: border-color 0.3s; }
-    .arg-step.active { border-color: #10b981; }
-    .arg-step.done { border-color: #06d6a0; }
-  </style>
-  <script src="/_sdk/resizing_sdk.js" type="text/javascript"></script>
- </head>
- <body data-template-id="__page-root" class="min-h-screen text-white">
-  <div id="starfield"></div>
-  <div class="w-full max-w-5xl mx-auto px-4 py-4"><!-- VIEW: Level Selection -->
-   <div id="view-level-select" class="view active fade-in">
-    <div class="text-center py-8">
-     <div class="inline-block mb-4"><img data-template-id="lumi-avatar-main" class="canva-image lumi-avatar excited w-28 h-28 mx-auto" loading="lazy">
-     </div>
-     <h1 data-template-id="app-title" class="canva-text font-display mb-2"></h1>
-     <p data-template-id="level-select-subtitle" class="canva-text text-sm opacity-80 mb-8"></p>
-     <h2 data-template-id="level-select-heading" class="canva-text font-display mb-6"></h2>
-     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto"><button class="level-option" onclick="selectLevel('kids')">
-       <div class="text-3xl mb-2">
-        🧒
-       </div><h3 data-template-id="level-kids-title" class="canva-text font-bold"></h3><p data-template-id="level-kids-desc" class="canva-text text-xs opacity-70 mt-1"></p></button> <button class="level-option" onclick="selectLevel('teen')">
-       <div class="text-3xl mb-2">
-        🎓
-       </div><h3 data-template-id="level-teen-title" class="canva-text font-bold"></h3><p data-template-id="level-teen-desc" class="canva-text text-xs opacity-70 mt-1"></p></button> <button class="level-option" onclick="selectLevel('adult')">
-       <div class="text-3xl mb-2">
-        🧑‍🔬
-       </div><h3 data-template-id="level-adult-title" class="canva-text font-bold"></h3><p data-template-id="level-adult-desc" class="canva-text text-xs opacity-70 mt-1"></p></button>
-     </div>
-    </div>
-   </div><!-- HEADER HUD -->
-   <header id="main-hud" class="flex items-center justify-between mb-5 gap-3 flex-wrap hidden">
-    <div class="flex items-center gap-3">
-     <div class="level-badge" id="level-badge">
-      1
-     </div>
-     <div class="flex-1 min-w-0">
-      <h1 data-template-id="hud-title" class="canva-text font-display leading-none"></h1>
-      <div class="flex items-center gap-2 mt-1">
-       <div class="xp-bar flex-1" style="min-width:120px;max-width:200px">
-        <div class="xp-fill" id="xp-fill" style="width:0%"></div>
-       </div><span id="xp-text" class="text-xs font-bold text-emerald-400">0 XP</span>
-      </div>
-     </div>
-    </div>
-    <div class="flex items-center gap-2">
-     <div class="currency-display flex items-center gap-1"><span>⭐</span><span id="star-count" class="text-sm font-bold text-yellow-400">0</span>
-     </div><span id="streak-display" class="currency-display flex items-center gap-1 text-sm font-bold text-orange-400">🔥 <span id="streak-count">0</span></span> <button id="compass-btn" class="roblox-btn px-3 py-1.5 text-xs bg-emerald-700"><i data-lucide="radar" style="width:14px;height:14px"></i></button> <button id="history-btn" class="roblox-btn px-3 py-1.5 text-xs bg-slate-700"><i data-lucide="book-open" style="width:14px;height:14px"></i></button>
-    </div>
-   </header><!-- Step Progress -->
-   <div id="step-bar" class="hidden mb-5">
-    <div class="flex items-center justify-between mb-2"><button id="back-btn" class="text-sm opacity-70 hover:opacity-100 flex items-center gap-1"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Back</button> <span id="step-label" class="text-sm font-bold text-emerald-400 uppercase tracking-wider"></span> <span id="xp-preview" class="text-xs font-bold text-yellow-400"></span>
-    </div>
-    <div class="flex gap-1.5" id="step-dots"></div>
-   </div><!-- VIEW: Worlds -->
-   <div id="view-worlds" class="view fade-in">
-    <div class="flex items-center gap-3 mb-4"><img data-template-id="lumi-avatar-welcome" class="canva-image lumi-avatar waving w-14 h-14 flex-shrink-0 rounded-2xl" loading="lazy">
-     <div class="lumi-speech">
-      <p data-template-id="lumi-welcome-msg" class="canva-text text-sm"></p>
-     </div>
-    </div>
-    <h2 data-template-id="worlds-heading" class="canva-text font-display mb-1"></h2>
-    <p data-template-id="worlds-subtitle" class="canva-text text-sm opacity-70 mb-5"></p>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"><button class="world-card text-left" onclick="selectWorld('water')"> <img data-template-id="world-water-img" class="canva-image w-full h-32 object-cover" loading="lazy">
-      <div data-template-id="world-water-card" class="canva-card p-3">
-       <h3 data-template-id="world-water-title" class="canva-text font-bold"></h3>
-       <p data-template-id="world-water-desc" class="canva-text text-xs opacity-70 mt-1"></p>
-       <div class="flex items-center justify-between mt-2"><span class="text-xs bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded-full font-bold">4 Missions</span> <span class="roblox-btn text-xs px-3 py-1 bg-green-600">PLAY ▶</span>
-       </div>
-      </div></button> <button class="world-card text-left" onclick="selectWorld('air')"> <img data-template-id="world-air-img" class="canva-image w-full h-32 object-cover" loading="lazy">
-      <div data-template-id="world-air-card" class="canva-card p-3">
-       <h3 data-template-id="world-air-title" class="canva-text font-bold"></h3>
-       <p data-template-id="world-air-desc" class="canva-text text-xs opacity-70 mt-1"></p>
-       <div class="flex items-center justify-between mt-2"><span class="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold">5 Missions</span> <span class="roblox-btn text-xs px-3 py-1 bg-green-600">PLAY ▶</span>
-       </div>
-      </div></button> <button class="world-card text-left" onclick="selectWorld('waste')"> <img data-template-id="world-waste-img" class="canva-image w-full h-32 object-cover" loading="lazy">
-      <div data-template-id="world-waste-card" class="canva-card p-3">
-       <h3 data-template-id="world-waste-title" class="canva-text font-bold"></h3>
-       <p data-template-id="world-waste-desc" class="canva-text text-xs opacity-70 mt-1"></p>
-       <div class="flex items-center justify-between mt-2"><span class="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-bold">3 Missions</span> <span class="roblox-btn text-xs px-3 py-1 bg-green-600">PLAY ▶</span>
-       </div>
-      </div></button> <button class="world-card text-left" onclick="selectWorld('energy')"> <img data-template-id="world-energy-img" class="canva-image w-full h-32 object-cover" loading="lazy">
-      <div data-template-id="world-energy-card" class="canva-card p-3">
-       <h3 data-template-id="world-energy-title" class="canva-text font-bold"></h3>
-       <p data-template-id="world-energy-desc" class="canva-text text-xs opacity-70 mt-1"></p>
-       <div class="flex items-center justify-between mt-2"><span class="text-xs bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded-full font-bold">5 Missions</span> <span class="roblox-btn text-xs px-3 py-1 bg-green-600">PLAY ▶</span>
-       </div>
-      </div></button> <button class="world-card text-left" onclick="selectWorld('climate')"> <img data-template-id="world-climate-img" class="canva-image w-full h-32 object-cover" loading="lazy">
-      <div data-template-id="world-climate-card" class="canva-card p-3">
-       <h3 data-template-id="world-climate-title" class="canva-text font-bold"></h3>
-       <p data-template-id="world-climate-desc" class="canva-text text-xs opacity-70 mt-1"></p>
-       <div class="flex items-center justify-between mt-2"><span class="text-xs bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold">3 Missions</span> <span class="roblox-btn text-xs px-3 py-1 bg-green-600">PLAY ▶</span>
-       </div>
-      </div></button> <button class="world-card text-left" onclick="selectWorld('food')"> <img data-template-id="world-food-img" class="canva-image w-full h-32 object-cover" loading="lazy">
-      <div data-template-id="world-food-card" class="canva-card p-3">
-       <h3 data-template-id="world-food-title" class="canva-text font-bold"></h3>
-       <p data-template-id="world-food-desc" class="canva-text text-xs opacity-70 mt-1"></p>
-       <div class="flex items-center justify-between mt-2"><span class="text-xs bg-green-500/20 text-green-300 px-2 py-0.5 rounded-full font-bold">3 Missions</span> <span class="roblox-btn text-xs px-3 py-1 bg-green-600">PLAY ▶</span>
-       </div>
-      </div></button> <button class="world-card text-left sm:col-span-2 lg:col-span-1" onclick="selectWorld('biodiversity')"> <img data-template-id="world-bio-img" class="canva-image w-full h-32 object-cover" loading="lazy">
-      <div data-template-id="world-bio-card" class="canva-card p-3">
-       <h3 data-template-id="world-bio-title" class="canva-text font-bold"></h3>
-       <p data-template-id="world-bio-desc" class="canva-text text-xs opacity-70 mt-1"></p>
-       <div class="flex items-center justify-between mt-2"><span class="text-xs bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full font-bold">3 Missions</span> <span class="roblox-btn text-xs px-3 py-1 bg-green-600">PLAY ▶</span>
-       </div>
-      </div></button>
-    </div>
-   </div><!-- VIEW: Missions -->
-   <div id="view-missions" class="view fade-in"><button onclick="showView('view-worlds')" class="text-sm opacity-70 hover:opacity-100 flex items-center gap-1 mb-4"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> All Worlds</button>
-    <div class="flex items-center gap-3 mb-4">
-     <div id="world-icon" class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl border-2 border-white/20"></div>
-     <div>
-      <h2 id="world-title-display" class="font-display text-xl font-bold"></h2>
-      <p id="world-desc-display" class="text-xs opacity-70"></p>
-     </div>
-    </div>
-    <div id="mission-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
-   </div><!-- VIEW: Observe -->
-   <div id="view-observe" class="view fade-in">
-    <div class="game-panel p-5 mb-4">
-     <h3 id="observe-title" class="font-display text-xl font-bold text-emerald-400 mb-3"></h3>
-     <div id="observe-data" class="grid grid-cols-2 gap-3 text-sm"></div>
-    </div>
-    <div class="flex items-start gap-3 game-panel p-4 mb-4"><img data-template-id="lumi-avatar-observe" class="canva-image lumi-avatar talking w-14 h-14 flex-shrink-0 rounded-2xl" loading="lazy">
-     <div class="flex-1">
-      <p class="text-xs text-emerald-400 font-bold mb-1">LUMI</p>
-      <p id="lumi-question" class="text-sm leading-relaxed"></p>
-      <div class="flex gap-2 mt-2 flex-wrap"><button onclick="lumiGuide('observe')" class="roblox-btn text-xs px-2 py-1 bg-emerald-700"><i data-lucide="lightbulb" style="width:12px;height:12px"></i> Hint</button> <button onclick="lumiSimplify('observe')" class="roblox-btn text-xs px-2 py-1 bg-cyan-700"><i data-lucide="message-circle" style="width:12px;height:12px"></i> Simplify</button>
-      </div>
-     </div>
-    </div>
-    <div class="mt-4"><label data-template-id="observe-label" class="canva-text text-sm font-medium block mb-1" for="observe-input"></label> <textarea id="observe-input" rows="2" class="w-full rounded-xl bg-[#1e1e3f] border-2 border-[#333] p-3 text-sm text-white resize-none focus:ring-2 focus:ring-emerald-500 focus:outline-none" required></textarea>
-     <p id="observe-error" class="validation-error">⚠️ Required to continue!</p>
-    </div><button onclick="tryNextStep('observe')" class="roblox-btn mt-4 px-6 py-2.5 bg-emerald-600 text-sm">Next →</button>
-   </div><!-- VIEW: Learn -->
-   <div id="view-learn" class="view fade-in">
-    <div class="game-panel p-5">
-     <h3 data-template-id="learn-heading" class="canva-text font-display text-lg font-bold text-cyan-400 mb-3"></h3>
-     <div id="video-section" class="mb-4 rounded-xl overflow-hidden bg-black/40 border-2 border-cyan-900/50">
-      <div class="aspect-video flex items-center justify-center relative" id="video-placeholder">
-       <div class="text-center">
-        <div class="text-4xl mb-2">
-         🎬
+      .xp-line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 6px;
+      }
+
+      .xp-bar {
+        width: min(210px, 44vw);
+        height: 20px;
+        border: 2px solid #33385c;
+        border-radius: 999px;
+        overflow: hidden;
+        background: #1e1e3f;
+      }
+
+      .xp-fill {
+        width: 0%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--green), #06d6a0);
+        transition: width 0.35s ease;
+      }
+
+      .currency {
+        min-height: 34px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border: 2px solid var(--yellow);
+        border-radius: 999px;
+        background: linear-gradient(135deg, #1e1e3f, #15162b);
+        color: var(--yellow);
+        font-weight: 900;
+      }
+
+      .icon-btn,
+      .nav-btn {
+        min-height: 34px;
+        border: 2px solid rgba(255, 255, 255, 0.18);
+        border-radius: 8px;
+        background: #263056;
+        color: #fff;
+        font-weight: 900;
+      }
+
+      .icon-btn {
+        width: 42px;
+      }
+
+      .icon-btn:hover,
+      .nav-btn:hover,
+      .game-btn:hover,
+      .level-option:hover,
+      .world-card:hover,
+      .mission-card:hover,
+      .quiz-option:hover,
+      .solution-option:hover,
+      .chat-btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .stepbar {
+        margin-bottom: 18px;
+      }
+
+      .stepbar-top {
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+
+      .step-label {
+        color: var(--green);
+        font-size: 13px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .step-xp {
+        color: var(--yellow);
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .step-dots {
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .step-dot {
+        height: 10px;
+        border: 2px solid #33385c;
+        border-radius: 999px;
+        background: #1e1e3f;
+      }
+
+      .step-dot.current {
+        background: var(--green);
+        border-color: #34d399;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+      }
+
+      .step-dot.done {
+        background: linear-gradient(90deg, var(--green), #06d6a0);
+        border-color: var(--green);
+      }
+
+      .level-screen {
+        min-height: calc(100vh - 56px);
+        display: grid;
+        place-items: center;
+        text-align: center;
+      }
+
+      .app-title {
+        margin: 14px 0 6px;
+        color: var(--green);
+        font-size: clamp(34px, 8vw, 56px);
+        line-height: 1.05;
+      }
+
+      .subtitle {
+        max-width: 620px;
+        margin: 0 auto 30px;
+        color: #dbeafe;
+        font-size: 16px;
+      }
+
+      .level-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        width: min(720px, 100%);
+        margin: 0 auto;
+      }
+
+      .level-option,
+      .world-card,
+      .mission-card,
+      .game-panel,
+      .quiz-option,
+      .solution-option,
+      .chat-panel {
+        border: 2px solid var(--line);
+        border-radius: 16px;
+        background: linear-gradient(180deg, var(--panel), #1a1a2e);
+      }
+
+      .level-option {
+        min-height: 150px;
+        padding: 20px;
+        text-align: center;
+        transition: transform 0.18s ease, border-color 0.18s ease;
+      }
+
+      .level-option.selected,
+      .world-card:hover,
+      .mission-card:hover {
+        border-color: rgba(16, 185, 129, 0.58);
+        box-shadow: 0 0 22px rgba(16, 185, 129, 0.22);
+      }
+
+      .level-symbol {
+        font-size: 36px;
+        line-height: 1;
+        margin-bottom: 10px;
+      }
+
+      .level-option h3,
+      .world-card h3,
+      .mission-card h4,
+      .game-panel h2,
+      .game-panel h3 {
+        margin: 0;
+      }
+
+      .level-option p,
+      .world-card p,
+      .mission-card p,
+      .muted {
+        color: var(--muted);
+      }
+
+      .lumi-avatar {
+        position: relative;
+        display: inline-grid;
+        place-items: center;
+        width: 84px;
+        height: 84px;
+        border: 4px solid rgba(255, 255, 255, 0.18);
+        border-radius: 22px;
+        background: linear-gradient(135deg, #34d399, #22d3ee);
+        color: #0f172a;
+        box-shadow: 0 0 24px rgba(16, 185, 129, 0.45);
+        font-size: 38px;
+        font-weight: 900;
+        animation: lumi-float 3s ease-in-out infinite;
+      }
+
+      .lumi-avatar.small {
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        font-size: 25px;
+      }
+
+      .lumi-avatar.tiny {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        font-size: 20px;
+      }
+
+      .lumi-avatar::before,
+      .lumi-avatar::after {
+        content: "";
+        position: absolute;
+        top: 31%;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #0f172a;
+      }
+
+      .lumi-avatar::before {
+        left: 31%;
+      }
+
+      .lumi-avatar::after {
+        right: 31%;
+      }
+
+      .lumi-mouth {
+        position: absolute;
+        bottom: 28%;
+        left: 50%;
+        width: 22px;
+        height: 10px;
+        border: 4px solid #0f172a;
+        border-top: 0;
+        border-radius: 0 0 999px 999px;
+        transform: translateX(-50%);
+      }
+
+      @keyframes lumi-float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
+      .lumi-speech {
+        position: relative;
+        max-width: 560px;
+        padding: 10px 14px;
+        border: 2px solid var(--green);
+        border-radius: 12px;
+        background: #1e293b;
+        color: #e2e8f0;
+      }
+
+      .lumi-speech::before {
+        content: "";
+        position: absolute;
+        left: -9px;
+        top: 18px;
+        border: 7px solid transparent;
+        border-right-color: var(--green);
+      }
+
+      .world-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .world-card {
+        overflow: hidden;
+        padding: 0;
+        text-align: left;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .world-art {
+        position: relative;
+        height: 132px;
+        overflow: hidden;
+        background: var(--art);
+      }
+
+      .world-art::before {
+        content: "";
+        position: absolute;
+        inset: auto 0 0;
+        height: 52px;
+        background: rgba(15, 23, 42, 0.28);
+      }
+
+      .world-art::after {
+        content: "";
+        position: absolute;
+        right: 18px;
+        top: 18px;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.28);
+      }
+
+      .scene-shape {
+        position: absolute;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      .shape-a {
+        left: 18px;
+        bottom: 22px;
+        width: 68px;
+        height: 42px;
+      }
+
+      .shape-b {
+        left: 104px;
+        bottom: 38px;
+        width: 92px;
+        height: 58px;
+      }
+
+      .shape-c {
+        right: 24px;
+        bottom: 18px;
+        width: 70px;
+        height: 34px;
+      }
+
+      .world-body {
+        padding: 12px;
+      }
+
+      .tag-row,
+      .answer-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: rgba(16, 185, 129, 0.14);
+        color: #6ee7b7;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .play-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 26px;
+        padding: 4px 11px;
+        border: 2px solid rgba(255, 255, 255, 0.18);
+        border-radius: 8px;
+        background: #16a34a;
+        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4);
+        color: #fff;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .mission-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .world-icon {
+        display: grid;
+        place-items: center;
+        width: 50px;
+        height: 50px;
+        border: 2px solid rgba(255, 255, 255, 0.18);
+        border-radius: 12px;
+        font-size: 24px;
+      }
+
+      .mission-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .mission-card {
+        padding: 16px;
+        text-align: left;
+        transition: transform 0.18s ease;
+      }
+
+      .game-panel {
+        padding: 18px;
+      }
+
+      .game-panel + .game-panel {
+        margin-top: 14px;
+      }
+
+      .data-grid,
+      .concept-grid,
+      .quiz-stack,
+      .solution-list,
+      .history-list,
+      .compass-stats {
+        display: grid;
+        gap: 12px;
+      }
+
+      .data-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .data-tile,
+      .concept-tile,
+      .stat-tile {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #1e1e3f;
+      }
+
+      .data-tile span,
+      .stat-tile span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .data-tile strong,
+      .stat-tile strong {
+        display: block;
+        margin-top: 3px;
+      }
+
+      .textarea,
+      .input {
+        width: 100%;
+        border: 2px solid #33385c;
+        border-radius: 12px;
+        outline: none;
+        background: #1e1e3f;
+        color: #fff;
+      }
+
+      .textarea {
+        min-height: 82px;
+        padding: 12px;
+        resize: vertical;
+      }
+
+      .input {
+        min-height: 42px;
+        padding: 10px 12px;
+      }
+
+      .textarea:focus,
+      .input:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+      }
+
+      .game-btn {
+        min-height: 42px;
+        padding: 10px 18px;
+        border: 3px solid rgba(255, 255, 255, 0.18);
+        border-radius: 8px;
+        background: #059669;
+        box-shadow: 0 6px 0 rgba(0, 0, 0, 0.4);
+        color: #fff;
+        font-weight: 900;
+        text-transform: uppercase;
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+      }
+
+      .game-btn:active {
+        transform: translateY(4px);
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+      }
+
+      .game-btn.secondary {
+        background: #334155;
+      }
+
+      .game-btn.cyan {
+        background: #0e7490;
+      }
+
+      .error {
+        display: none;
+        margin-top: 6px;
+        color: #f87171;
+        font-size: 13px;
+      }
+
+      .error.show {
+        display: block;
+      }
+
+      .video-box {
+        position: relative;
+        aspect-ratio: 16 / 9;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        border: 2px solid rgba(34, 211, 238, 0.24);
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(8, 47, 73, 0.7), rgba(15, 23, 42, 0.94));
+      }
+
+      .video-play {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        border: 0;
+        background: transparent;
+      }
+
+      .play-circle {
+        display: grid;
+        place-items: center;
+        width: 62px;
+        height: 62px;
+        border-radius: 50%;
+        background: rgba(34, 211, 238, 0.82);
+        box-shadow: 0 0 24px rgba(34, 211, 238, 0.35);
+        font-size: 28px;
+        font-weight: 900;
+      }
+
+      .video-player {
+        display: none;
+        width: 100%;
+        height: 100%;
+        place-items: center;
+        padding: 24px;
+        text-align: center;
+      }
+
+      .video-player.active {
+        display: grid;
+      }
+
+      .slide-dots {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-top: 12px;
+      }
+
+      .slide-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #475569;
+      }
+
+      .slide-dot.active {
+        background: var(--cyan);
+      }
+
+      .sim-grid {
+        display: grid;
+        grid-template-columns: 0.95fr 1.05fr;
+        gap: 16px;
+      }
+
+      .slider-control {
+        margin-bottom: 14px;
+      }
+
+      .slider-label {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 6px;
+        font-size: 13px;
+      }
+
+      .slider-label strong {
+        color: var(--green);
+      }
+
+      .slider {
+        width: 100%;
+        height: 12px;
+        accent-color: var(--green);
+      }
+
+      .sim-canvas {
+        position: relative;
+        min-height: 230px;
+        overflow: hidden;
+        border: 3px solid #334155;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #0f172a, #1e293b);
+      }
+
+      .particle {
+        position: absolute;
+        border-radius: 50%;
+        transition: opacity 0.25s ease, transform 0.25s ease, background 0.25s ease;
+      }
+
+      .score-readout {
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        width: min(260px, calc(100% - 28px));
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(15, 23, 42, 0.82);
+      }
+
+      .score-bar {
+        height: 16px;
+        margin-top: 8px;
+        overflow: hidden;
+        border: 1px solid #33385c;
+        border-radius: 999px;
+        background: #1e1e3f;
+      }
+
+      .score-fill {
+        width: 0%;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--green);
+        transition: width 0.35s ease, background 0.35s ease;
+      }
+
+      .quiz-option,
+      .solution-option {
+        width: 100%;
+        padding: 12px 14px;
+        text-align: left;
+        transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      }
+
+      .quiz-option.selected,
+      .solution-option.selected {
+        border-color: var(--green);
+        background: rgba(16, 185, 129, 0.14);
+      }
+
+      .quiz-option.correct {
+        border-color: var(--green);
+        background: rgba(16, 185, 129, 0.2);
+      }
+
+      .quiz-option.wrong {
+        border-color: var(--red);
+        background: rgba(239, 68, 68, 0.16);
+      }
+
+      .arg-grid {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 16px;
+      }
+
+      .arg-step {
+        margin-bottom: 12px;
+        padding-left: 12px;
+        border-left: 3px solid #334155;
+        color: var(--muted);
+      }
+
+      .arg-step.active {
+        border-color: var(--green);
+        color: #fff;
+      }
+
+      .arg-step.done {
+        border-color: #06d6a0;
+        color: #d1fae5;
+      }
+
+      .solution-option strong {
+        display: block;
+      }
+
+      .solution-option span {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+      }
+
+      .verify-meter {
+        height: 26px;
+        overflow: hidden;
+        border: 1px solid #33385c;
+        border-radius: 999px;
+        background: #1e1e3f;
+      }
+
+      .verify-fill {
+        height: 100%;
+        border-radius: inherit;
+        transition: width 0.35s ease;
+      }
+
+      .success-box {
+        display: none;
+        margin-top: 14px;
+        padding: 14px;
+        border: 2px solid rgba(16, 185, 129, 0.5);
+        border-radius: 16px;
+        background: rgba(16, 185, 129, 0.12);
+        color: #bbf7d0;
+        text-align: center;
+        font-weight: 900;
+      }
+
+      .success-box.active {
+        display: block;
+      }
+
+      .compass-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .radar-wrap {
+        display: grid;
+        place-items: center;
+        margin: 16px 0;
+      }
+
+      .insight-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .history-list {
+        max-height: 520px;
+        overflow: auto;
+      }
+
+      .history-item {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #1e1e3f;
+      }
+
+      .float-lumi {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 20;
+      }
+
+      .float-btn {
+        display: grid;
+        place-items: center;
+        width: 64px;
+        height: 64px;
+        border: 3px solid rgba(16, 185, 129, 0.5);
+        border-radius: 50%;
+        background: transparent;
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+      }
+
+      .float-btn .lumi-avatar {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        font-size: 26px;
+      }
+
+      .chat-panel {
+        position: absolute;
+        right: 0;
+        bottom: 76px;
+        display: none;
+        width: 290px;
+        overflow: hidden;
+      }
+
+      .chat-panel.open {
+        display: block;
+        animation: fade-in 0.2s ease both;
+      }
+
+      .chat-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 12px;
+        border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+        background: rgba(16, 185, 129, 0.12);
+        font-weight: 900;
+      }
+
+      .chat-msgs {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        height: 180px;
+        overflow: auto;
+        padding: 12px;
+      }
+
+      .chat-msg {
+        max-width: 90%;
+        padding: 8px 10px;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 12px;
+        background: rgba(16, 185, 129, 0.1);
+        color: #e2e8f0;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      .chat-msg.user {
+        align-self: flex-end;
+        border-color: rgba(139, 92, 246, 0.36);
+        background: rgba(139, 92, 246, 0.16);
+      }
+
+      .chat-quickies {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 0 12px 12px;
+      }
+
+      .chat-btn {
+        min-height: 28px;
+        padding: 4px 9px;
+        border: 1px solid rgba(16, 185, 129, 0.32);
+        border-radius: 999px;
+        background: rgba(16, 185, 129, 0.1);
+        color: #34d399;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .xp-popup {
+        position: fixed;
+        top: 76px;
+        right: 22px;
+        z-index: 50;
+        color: var(--yellow);
+        font-size: 28px;
+        font-weight: 900;
+        pointer-events: none;
+        animation: xp-pop 1.1s ease both;
+      }
+
+      @keyframes xp-pop {
+        0% {
+          opacity: 0;
+          transform: translateY(0) scale(0.2);
+        }
+
+        45% {
+          opacity: 1;
+          transform: translateY(-12px) scale(1.2);
+        }
+
+        100% {
+          opacity: 0;
+          transform: translateY(-26px) scale(1);
+        }
+      }
+
+      @media (max-width: 820px) {
+        .hud {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .hud-actions {
+          width: 100%;
+          justify-content: flex-end;
+          flex-wrap: wrap;
+        }
+
+        .world-grid,
+        .mission-list,
+        .level-grid,
+        .sim-grid,
+        .arg-grid,
+        .compass-stats {
+          grid-template-columns: 1fr;
+        }
+
+        .data-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .step-dots {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .lumi-row {
+          align-items: flex-start;
+        }
+
+        .float-lumi {
+          right: 12px;
+          bottom: 12px;
+        }
+
+        .chat-panel {
+          width: min(290px, calc(100vw - 24px));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="starfield"></div>
+    <div class="shell">
+      <section id="view-level" class="view active">
+        <div class="level-screen">
+          <div>
+            <div class="lumi-avatar" aria-label="Lumi">L<span class="lumi-mouth"></span></div>
+            <h1 class="font-display app-title">LUMI Science Explorer</h1>
+            <p class="subtitle">Pilih mode, masuk ke dunia sains, lalu selesaikan misi dengan siklus observe, learn, simulate, quiz, argue, solve, verify, reflect.</p>
+            <h2 class="font-display" style="margin:0 0 16px;">Choose your explorer mode</h2>
+            <div class="level-grid" id="level-grid"></div>
+          </div>
         </div>
-        <p data-template-id="video-label" class="canva-text text-sm font-bold"></p>
-        <p id="video-topic" class="text-xs text-slate-400 mt-1"></p>
-       </div><button onclick="playVideo()" class="absolute inset-0 flex items-center justify-center group">
-        <div class="w-16 h-16 bg-cyan-500/80 rounded-full flex items-center justify-center group-hover:bg-cyan-400 transition"><i data-lucide="play" style="width:28px;height:28px;color:white"></i>
-        </div></button>
-      </div>
-      <div id="video-player" class="hidden aspect-video bg-gradient-to-b from-cyan-900/30 to-slate-900 flex items-center justify-center">
-       <div class="text-center p-6"><img data-template-id="lumi-avatar-learn" class="canva-image lumi-avatar talking w-16 h-16 mx-auto mb-3 rounded-2xl" loading="lazy">
-        <div id="video-narration" class="text-sm text-slate-200 leading-relaxed max-w-md mx-auto"></div>
-        <div class="flex gap-2 mt-4 justify-center"><button onclick="prevSlide()" class="roblox-btn text-xs px-3 py-1.5 bg-slate-700"><i data-lucide="skip-back" style="width:12px;height:12px"></i></button> <button onclick="nextSlide()" class="roblox-btn text-xs px-3 py-1.5 bg-cyan-700"><i data-lucide="skip-forward" style="width:12px;height:12px"></i></button>
+      </section>
+
+      <header id="hud" class="hud hidden">
+        <div class="hud-left">
+          <div class="level-badge" id="level-badge">1</div>
+          <div>
+            <h1 class="font-display hud-title">LUMI</h1>
+            <div class="xp-line">
+              <div class="xp-bar"><div class="xp-fill" id="xp-fill"></div></div>
+              <span id="xp-text" style="color:var(--green);font-size:12px;font-weight:900;">0 XP</span>
+            </div>
+          </div>
         </div>
-        <div id="slide-dots" class="flex gap-1 justify-center mt-2"></div>
-       </div>
+        <div class="hud-actions">
+          <div class="currency">STAR <span id="star-count">0</span></div>
+          <div class="currency" style="color:#fb923c;">STREAK <span id="streak-count">0</span></div>
+          <button class="icon-btn" id="compass-btn" title="Science Compass" type="button">RD</button>
+          <button class="icon-btn" id="history-btn" title="Mission History" type="button">BK</button>
+        </div>
+      </header>
+
+      <div id="stepbar" class="stepbar hidden">
+        <div class="stepbar-top">
+          <button class="nav-btn" id="back-btn" type="button">&lt; Back</button>
+          <span class="step-label" id="step-label"></span>
+          <span class="step-xp">+10-35 XP</span>
+        </div>
+        <div class="step-dots" id="step-dots"></div>
       </div>
-     </div>
-     <div id="learn-content" class="text-sm leading-relaxed space-y-3 opacity-90"></div>
+
+      <main>
+        <section id="view-worlds" class="view">
+          <div class="lumi-row" style="margin-bottom:18px;">
+            <div class="lumi-avatar small">L<span class="lumi-mouth"></span></div>
+            <div class="lumi-speech">Pilih dunia yang ingin kamu jelajahi. Setiap misi punya data, simulasi, quiz, dan solusi yang harus diverifikasi.</div>
+          </div>
+          <h2 class="font-display" style="margin:0 0 4px;color:var(--green);">Choose a world to explore</h2>
+          <p class="muted" style="margin:0 0 18px;">Belajar sains dari masalah nyata, bukan dari daftar bab.</p>
+          <div class="world-grid" id="world-grid"></div>
+        </section>
+
+        <section id="view-missions" class="view">
+          <button class="nav-btn" type="button" data-goto="view-worlds">&lt; All Worlds</button>
+          <div class="mission-head" style="margin-top:16px;">
+            <div class="world-icon" id="world-icon"></div>
+            <div>
+              <h2 class="font-display" id="world-title-display"></h2>
+              <p class="muted" id="world-desc-display" style="margin:3px 0 0;"></p>
+            </div>
+          </div>
+          <div class="mission-list" id="mission-list"></div>
+        </section>
+
+        <section id="view-observe" class="view">
+          <div class="game-panel">
+            <h2 class="font-display" id="observe-title" style="color:var(--green);"></h2>
+            <div class="data-grid" id="observe-data" style="margin-top:14px;"></div>
+          </div>
+          <div class="game-panel">
+            <div class="lumi-row">
+              <div class="lumi-avatar small">L<span class="lumi-mouth"></span></div>
+              <div>
+                <strong style="color:var(--green);font-size:12px;">LUMI</strong>
+                <p id="lumi-question" style="margin:4px 0 10px;"></p>
+                <button class="game-btn secondary" type="button" data-help="observe">Hint</button>
+                <button class="game-btn cyan" type="button" data-simple="observe">Simplify</button>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:14px;">
+            <label for="observe-input" style="display:block;margin-bottom:7px;font-weight:800;">Apa yang kamu amati?</label>
+            <textarea class="textarea" id="observe-input" placeholder="Contoh: data yang paling tidak normal adalah..."></textarea>
+            <p class="error" id="observe-error">Wajib diisi dulu.</p>
+          </div>
+          <button class="game-btn" type="button" data-next="observe" style="margin-top:14px;">Next</button>
+        </section>
+
+        <section id="view-learn" class="view">
+          <div class="game-panel">
+            <h2 class="font-display" style="color:var(--cyan);">Video & Science Concepts</h2>
+            <div class="video-box" style="margin-top:14px;">
+              <div id="video-placeholder" style="text-align:center;">
+                <div style="font-size:44px;">PLAY</div>
+                <strong>Lumi micro lesson</strong>
+                <p class="muted" id="video-topic" style="margin:6px 0 0;"></p>
+              </div>
+              <button class="video-play" type="button" id="play-video" aria-label="Play lesson">
+                <span class="play-circle">▶</span>
+              </button>
+              <div class="video-player" id="video-player">
+                <div>
+                  <div class="lumi-avatar small" style="margin-bottom:10px;">L<span class="lumi-mouth"></span></div>
+                  <div id="video-narration"></div>
+                  <div class="answer-row" style="justify-content:center;margin-top:14px;">
+                    <button class="game-btn secondary" id="prev-slide" type="button">&lt;&lt;</button>
+                    <button class="game-btn cyan" id="next-slide" type="button">&gt;&gt;</button>
+                  </div>
+                  <div class="slide-dots" id="slide-dots"></div>
+                </div>
+              </div>
+            </div>
+            <div class="concept-grid" id="learn-content" style="margin-top:14px;"></div>
+          </div>
+          <button class="game-btn" type="button" data-next="learn" style="margin-top:14px;">Next: Simulation</button>
+        </section>
+
+        <section id="view-simulate" class="view">
+          <div class="game-panel">
+            <h2 class="font-display" style="color:var(--yellow);">Simulation Lab</h2>
+            <div class="sim-grid" style="margin-top:16px;">
+              <div id="sim-controls"></div>
+              <div class="sim-canvas">
+                <div id="particles"></div>
+                <div class="score-readout">
+                  <span class="muted">Environment Score</span>
+                  <strong id="sim-score" style="display:block;font-size:30px;">0%</strong>
+                  <div class="score-bar"><div class="score-fill" id="sim-bar"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="game-panel">
+            <div class="lumi-row">
+              <div class="lumi-avatar tiny">L<span class="lumi-mouth"></span></div>
+              <p class="muted" style="margin:0;">Ubah satu variabel dulu, lalu bandingkan dampaknya. Ilmuwan tidak mengubah semuanya sekaligus.</p>
+            </div>
+          </div>
+          <button class="game-btn" type="button" data-next="simulate" style="margin-top:14px;">Next: Quiz</button>
+        </section>
+
+        <section id="view-quiz" class="view">
+          <h2 class="font-display" style="color:var(--pink);">Quick Check</h2>
+          <div class="game-panel" style="margin:14px 0;">
+            <div class="lumi-row">
+              <div class="lumi-avatar tiny">L<span class="lumi-mouth"></span></div>
+              <p id="quiz-lumi-msg" style="margin:0;">Jawab semua pertanyaan dengan benar untuk lanjut.</p>
+            </div>
+          </div>
+          <div class="quiz-stack" id="quiz-container"></div>
+          <p class="error" id="quiz-error">Jawab semua pertanyaan dengan benar dulu.</p>
+          <button class="game-btn" id="quiz-submit" type="button" style="margin-top:14px;">Check Answers</button>
+          <button class="game-btn" id="quiz-next" type="button" data-next="quiz" style="display:none;margin-top:14px;">Next: Argument</button>
+        </section>
+
+        <section id="view-argument" class="view">
+          <h2 class="font-display" style="color:var(--orange);">Evidence-Based Argument Builder</h2>
+          <div class="game-panel" style="margin-top:14px;">
+            <div class="lumi-row">
+              <div class="lumi-avatar tiny">L<span class="lumi-mouth"></span></div>
+              <p style="margin:0;">Buat argumen ilmiah: claim, evidence, reasoning, lalu pertimbangkan penjelasan lain.</p>
+            </div>
+          </div>
+          <div class="game-panel">
+            <div class="arg-grid">
+              <div>
+                <div class="arg-step active">1. Claim</div>
+                <div class="arg-step">2. Evidence</div>
+                <div class="arg-step">3. Reasoning</div>
+                <div class="arg-step">4. Alternative</div>
+              </div>
+              <div style="display:grid;gap:12px;">
+                <textarea class="textarea" id="arg-claim" placeholder="Claim: penyebab utama menurutku adalah..."></textarea>
+                <textarea class="textarea" id="arg-evidence" placeholder="Evidence: data yang mendukung adalah..."></textarea>
+                <textarea class="textarea" id="arg-reasoning" placeholder="Reasoning: bukti itu mendukung claim karena..."></textarea>
+                <textarea class="textarea" id="arg-rebuttal" placeholder="Alternative: kemungkinan lain adalah..., tetapi..."></textarea>
+              </div>
+            </div>
+            <button class="game-btn cyan" id="check-argument" type="button" style="margin-top:14px;">Ask Lumi</button>
+            <div class="success-box" id="arg-feedback"></div>
+          </div>
+          <p class="error" id="arg-error">Isi minimal claim dan evidence.</p>
+          <button class="game-btn" type="button" data-next="argument" style="margin-top:14px;">Next: Solution</button>
+        </section>
+
+        <section id="view-solution" class="view">
+          <h2 class="font-display" style="color:var(--violet);">Choose a Solution</h2>
+          <div class="solution-list" id="solution-options" style="margin-top:14px;"></div>
+          <p class="error" id="solution-error">Pilih satu solusi dulu.</p>
+          <div class="game-panel">
+            <div class="lumi-row">
+              <div class="lumi-avatar tiny">L<span class="lumi-mouth"></span></div>
+              <p class="muted" style="margin:0;">Solusi terbaik mengatasi akar masalah, bukan hanya gejala yang terlihat.</p>
+            </div>
+          </div>
+          <button class="game-btn" type="button" data-next="solution" style="margin-top:14px;">Verify</button>
+        </section>
+
+        <section id="view-verify" class="view">
+          <h2 class="font-display" style="color:#fb7185;">Verification Check</h2>
+          <div class="game-panel" id="verify-content" style="margin-top:14px;"></div>
+          <div class="game-panel">
+            <div class="lumi-row">
+              <div class="lumi-avatar tiny">L<span class="lumi-mouth"></span></div>
+              <p class="muted" style="margin:0;">Cek lagi: apakah solusi ini menyasar penyebab utama dan bisa dibuktikan berhasil?</p>
+            </div>
+          </div>
+          <button class="game-btn" type="button" data-next="verify" style="margin-top:14px;">Reflect</button>
+        </section>
+
+        <section id="view-reflect" class="view">
+          <h2 class="font-display" style="color:var(--green);">Reflection Journal</h2>
+          <div class="game-panel" style="margin-top:14px;">
+            <div class="lumi-row">
+              <div class="lumi-avatar tiny">L<span class="lumi-mouth"></span></div>
+              <p class="muted" style="margin:0;">Tulis apa yang kamu pelajari, bukti yang paling penting, dan kenapa solusimu masuk akal.</p>
+            </div>
+          </div>
+          <form id="reflect-form" style="display:grid;gap:12px;margin-top:14px;">
+            <div>
+              <label for="reflect-name" style="display:block;margin-bottom:7px;font-weight:800;">Nama</label>
+              <input class="input" id="reflect-name" />
+              <p class="error" id="name-error">Nama wajib diisi.</p>
+            </div>
+            <div>
+              <label for="reflect-notes" style="display:block;margin-bottom:7px;font-weight:800;">Refleksi</label>
+              <textarea class="textarea" id="reflect-notes" placeholder="Hari ini aku belajar bahwa..."></textarea>
+              <p class="error" id="notes-error">Refleksi minimal 10 karakter.</p>
+            </div>
+            <button class="game-btn" type="submit">Save Reflection</button>
+          </form>
+          <div class="success-box" id="reflect-success">Saved. XP dan progress-mu bertambah.</div>
+          <div class="error" id="reflect-error"></div>
+        </section>
+
+        <section id="view-history" class="view">
+          <button class="nav-btn" type="button" data-goto="view-worlds">&lt; Back</button>
+          <h2 class="font-display" style="color:var(--green);">Mission History</h2>
+          <div class="history-list" id="history-list"></div>
+          <p class="muted" id="history-empty" style="text-align:center;padding:40px 0;">Belum ada misi selesai.</p>
+        </section>
+
+        <section id="view-compass" class="view">
+          <button class="nav-btn" type="button" data-goto="view-worlds">&lt; Back</button>
+          <h2 class="font-display" style="color:var(--green);">Science Compass</h2>
+          <p class="muted">Kemampuan sainsmu tumbuh dari misi yang selesai, argumen yang kuat, solusi yang tepat, dan refleksi.</p>
+          <div class="compass-stats" id="compass-stats"></div>
+          <div class="game-panel radar-wrap">
+            <svg viewBox="0 0 200 200" width="280" height="280" role="img" aria-label="Science Compass">
+              <circle cx="100" cy="100" r="80" fill="none" stroke="#334155" />
+              <circle cx="100" cy="100" r="60" fill="none" stroke="#334155" />
+              <circle cx="100" cy="100" r="40" fill="none" stroke="#334155" />
+              <polygon id="skill-polygon" points="100,100" fill="#10b981" fill-opacity="0.25" stroke="#10b981" stroke-width="3" />
+            </svg>
+          </div>
+          <div class="game-panel insight-list" id="compass-insights"></div>
+        </section>
+      </main>
     </div>
-    <div class="flex items-start gap-3 game-panel p-4 mt-4"><img data-template-id="lumi-avatar-learn2" class="canva-image lumi-avatar floating w-12 h-12 flex-shrink-0 rounded-2xl" loading="lazy">
-     <div class="flex-1">
-      <p class="text-xs text-cyan-400 font-bold mb-1">LUMI</p>
-      <p id="lumi-learn-prompt" class="text-sm leading-relaxed text-slate-300"></p>
-     </div>
-    </div><button onclick="tryNextStep('learn')" class="roblox-btn mt-4 px-6 py-2.5 bg-emerald-600 text-sm">Next: Simulation →</button>
-   </div><!-- VIEW: Simulate -->
-   <div id="view-simulate" class="view fade-in">
-    <h3 data-template-id="sim-heading" class="canva-text font-display text-lg font-bold text-amber-400 mb-4"></h3>
-    <div class="phet-canvas p-4 mb-4" id="phet-visual">
-     <div class="flex items-center justify-between mb-2"><span class="text-xs font-bold text-amber-400 uppercase">Real-Time Visualization</span>
-      <div class="bg-[#0f172a] border-2 border-[#475569] rounded-lg px-2 py-1"><span id="phet-score-display" class="text-sm font-bold text-emerald-400">50%</span>
+
+    <div class="float-lumi">
+      <button class="float-btn" id="chat-toggle" type="button" aria-label="Open Lumi chat">
+        <span class="lumi-avatar">L<span class="lumi-mouth"></span></span>
+      </button>
+      <div class="chat-panel" id="chat-panel">
+        <div class="chat-head"><span>LUMI Chat</span><span style="color:#34d399;">Online</span></div>
+        <div class="chat-msgs" id="chat-msgs">
+          <div class="chat-msg">Hai. Aku Lumi. Mau hint belajar, info XP, atau rekomendasi misi?</div>
+        </div>
+        <div class="chat-quickies">
+          <button class="chat-btn" type="button" data-chat="tips">Tips</button>
+          <button class="chat-btn" type="button" data-chat="xp">XP?</button>
+          <button class="chat-btn" type="button" data-chat="mission">Mission</button>
+          <button class="chat-btn" type="button" data-chat="about">About</button>
+          <button class="chat-btn" type="button" data-chat="sdgs">SDGs</button>
+        </div>
       </div>
-     </div>
-     <div class="relative h-32" id="phet-particles"></div>
-     <div class="flex justify-between mt-2 text-xs text-slate-400">
-      <span>High Pollution</span><span>Ideal Condition</span>
-     </div>
-     <div class="w-full h-3 bg-slate-800 rounded-full mt-1 overflow-hidden">
-      <div id="phet-bar" class="h-full rounded-full transition-all duration-500" style="width:50%;background:#f59e0b"></div>
-     </div>
     </div>
-    <div id="sim-controls" class="space-y-4 game-panel p-5"></div>
-    <div class="flex items-start gap-3 game-panel p-4 mt-4"><img data-template-id="lumi-avatar-sim" class="canva-image lumi-avatar floating w-12 h-12 flex-shrink-0 rounded-2xl" loading="lazy">
-     <div class="flex-1">
-      <p class="text-xs text-amber-400 font-bold mb-1">LUMI</p>
-      <p id="lumi-sim-prompt" class="text-sm leading-relaxed text-slate-300">Change the variables and see the real-time impact! 🎮</p>
-     </div>
-    </div><button onclick="tryNextStep('simulate')" class="roblox-btn mt-4 px-6 py-2.5 bg-emerald-600 text-sm">Next: Quiz →</button>
-   </div><!-- VIEW: Quiz -->
-   <div id="view-quiz" class="view fade-in">
-    <h3 data-template-id="quiz-heading" class="canva-text font-display text-lg font-bold text-pink-400 mb-4"></h3>
-    <div class="flex items-start gap-3 game-panel p-4 mb-4"><img data-template-id="lumi-avatar-quiz" class="canva-image lumi-avatar talking w-12 h-12 flex-shrink-0 rounded-2xl" loading="lazy">
-     <div class="flex-1">
-      <p class="text-xs text-pink-400 font-bold mb-1">LUMI</p>
-      <p id="quiz-lumi-msg" class="text-sm text-slate-300">Answer all questions to continue! 🧠</p>
-     </div>
-    </div>
-    <div id="quiz-container" class="space-y-4"></div>
-    <p id="quiz-error" class="validation-error mt-2">⚠️ Answer all questions correctly to continue!</p><button onclick="submitQuiz()" id="quiz-submit-btn" class="roblox-btn mt-4 px-6 py-2.5 bg-emerald-600 text-sm">Check Answers ✓</button> <button onclick="tryNextStep('quiz')" id="quiz-next-btn" class="roblox-btn mt-4 px-6 py-2.5 bg-emerald-600 text-sm hidden">Next: Argument Builder →</button>
-   </div><!-- VIEW: Argument Builder -->
-   <div id="view-argument" class="view fade-in">
-    <h3 data-template-id="argument-heading" class="canva-text font-display text-lg font-bold text-orange-400 mb-4"></h3>
-    <div class="flex items-start gap-3 game-panel p-4 mb-4"><img data-template-id="lumi-avatar-arg" class="canva-image lumi-avatar talking w-12 h-12 flex-shrink-0 rounded-2xl" loading="lazy">
-     <div class="flex-1">
-      <p class="text-xs text-orange-400 font-bold mb-1">LUMI</p>
-      <p data-template-id="argument-lumi-msg" class="canva-text text-sm text-slate-300"></p>
-     </div>
-    </div>
-    <div id="arg-steps" class="game-panel p-5 space-y-1">
-     <div class="arg-step active" id="arg-step-claim">
-      <p class="text-xs font-bold text-orange-400 uppercase mb-1">Step 1: Your Claim</p>
-      <p class="text-xs text-slate-400 mb-2">What do you think is the main cause?</p><textarea id="arg-claim" rows="2" class="w-full rounded-lg bg-[#1e1e3f] border border-[#333] p-2 text-sm text-white resize-none focus:ring-1 focus:ring-orange-500 focus:outline-none"></textarea>
-     </div>
-     <div class="arg-step" id="arg-step-evidence">
-      <p class="text-xs font-bold text-orange-400 uppercase mb-1">Step 2: Evidence</p>
-      <p class="text-xs text-slate-400 mb-2">What data supports your claim?</p><textarea id="arg-evidence" rows="2" class="w-full rounded-lg bg-[#1e1e3f] border border-[#333] p-2 text-sm text-white resize-none focus:ring-1 focus:ring-orange-500 focus:outline-none"></textarea>
-     </div>
-     <div class="arg-step" id="arg-step-reasoning">
-      <p class="text-xs font-bold text-orange-400 uppercase mb-1">Step 3: Reasoning</p>
-      <p class="text-xs text-slate-400 mb-2">Why does this evidence support your claim?</p><textarea id="arg-reasoning" rows="2" class="w-full rounded-lg bg-[#1e1e3f] border border-[#333] p-2 text-sm text-white resize-none focus:ring-1 focus:ring-orange-500 focus:outline-none"></textarea>
-     </div>
-     <div class="arg-step" id="arg-step-rebuttal">
-      <p class="text-xs font-bold text-orange-400 uppercase mb-1">Step 4: Alternative Explanation</p>
-      <p class="text-xs text-slate-400 mb-2">Could there be another cause? Why is your claim stronger?</p><textarea id="arg-rebuttal" rows="2" class="w-full rounded-lg bg-[#1e1e3f] border border-[#333] p-2 text-sm text-white resize-none focus:ring-1 focus:ring-orange-500 focus:outline-none"></textarea>
-     </div>
-    </div>
-    <div class="flex gap-2 mt-3"><button onclick="lumiCheckArgument()" class="roblox-btn px-4 py-2 text-xs bg-orange-700"><i data-lucide="message-circle" style="width:12px;height:12px"></i> Ask Lumi to Review</button>
-    </div>
-    <div id="arg-feedback" class="hidden game-panel p-4 mt-3 border-orange-500/30">
-     <div class="flex items-start gap-2"><img data-template-id="lumi-avatar-arg-fb" class="canva-image lumi-avatar excited w-10 h-10 flex-shrink-0 rounded-xl" loading="lazy">
-      <p id="arg-feedback-text" class="text-sm text-slate-300"></p>
-     </div>
-    </div>
-    <p id="arg-error" class="validation-error mt-2">⚠️ Fill in at least the Claim and Evidence!</p><button onclick="tryNextStep('argument')" class="roblox-btn mt-4 px-6 py-2.5 bg-emerald-600 text-sm">Next: Solution →</button>
-   </div><!-- VIEW: Solution -->
-   <div id="view-solution" class="view fade-in">
-    <h3 data-template-id="solution-heading" class="canva-text font-display text-lg font-bold text-violet-400 mb-4"></h3>
-    <div id="solution-options" class="space-y-2 mb-4"></div>
-    <div class="flex items-start gap-3 game-panel p-4"><img data-template-id="lumi-avatar-sol" class="canva-image lumi-avatar floating w-12 h-12 flex-shrink-0 rounded-2xl" loading="lazy">
-     <div class="flex-1">
-      <p class="text-xs text-violet-400 font-bold mb-1">LUMI</p>
-      <p id="lumi-sol-prompt" class="text-sm leading-relaxed text-slate-300">Pick the solution that addresses the root cause!</p>
-     </div>
-    </div>
-    <p id="solution-error" class="validation-error mt-2">⚠️ Choose a solution to continue!</p><button onclick="tryNextStep('solution')" class="roblox-btn mt-4 px-6 py-2.5 bg-emerald-600 text-sm">Verify →</button>
-   </div><!-- VIEW: Verify -->
-   <div id="view-verify" class="view fade-in">
-    <h3 data-template-id="verify-heading" class="canva-text font-display text-lg font-bold text-rose-400 mb-4"></h3>
-    <div id="verify-content" class="game-panel p-5 text-sm leading-relaxed space-y-3 mb-4"></div>
-    <div class="flex items-start gap-3 game-panel p-4"><img data-template-id="lumi-avatar-verify" class="canva-image lumi-avatar floating w-12 h-12 flex-shrink-0 rounded-2xl" loading="lazy">
-     <div class="flex-1">
-      <p class="text-xs text-rose-400 font-bold mb-1">LUMI</p>
-      <p id="lumi-verify-prompt" class="text-sm leading-relaxed text-slate-300">Does your solution truly address the root cause?</p>
-     </div>
-    </div><button onclick="tryNextStep('verify')" class="roblox-btn mt-4 px-6 py-2.5 bg-emerald-600 text-sm">Reflect →</button>
-   </div><!-- VIEW: Reflect -->
-   <div id="view-reflect" class="view fade-in">
-    <h3 data-template-id="reflect-heading" class="canva-text font-display text-lg font-bold text-emerald-400 mb-4"></h3>
-    <div class="flex items-start gap-3 game-panel p-4 mb-4"><img data-template-id="lumi-avatar-reflect" class="canva-image lumi-avatar talking w-12 h-12 flex-shrink-0 rounded-2xl" loading="lazy">
-     <p data-template-id="reflect-prompt" class="canva-text text-sm leading-relaxed"></p>
-    </div>
-    <form id="reflect-form" class="space-y-3">
-     <div><label data-template-id="reflect-name-label" class="canva-text text-sm font-medium block mb-1" for="reflect-name"></label> <input id="reflect-name" type="text" required class="w-full rounded-xl bg-[#1e1e3f] border-2 border-[#333] p-2.5 text-sm text-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-      <p id="name-error" class="validation-error">⚠️ Name is required!</p>
-     </div>
-     <div><label data-template-id="reflect-notes-label" class="canva-text text-sm font-medium block mb-1" for="reflect-notes"></label> <textarea id="reflect-notes" rows="3" required class="w-full rounded-xl bg-[#1e1e3f] border-2 border-[#333] p-3 text-sm text-white resize-none focus:ring-2 focus:ring-emerald-500 focus:outline-none"></textarea>
-      <p id="notes-error" class="validation-error">⚠️ Reflection required (min. 10 characters)!</p>
-     </div><button data-template-id="reflect-submit" type="submit" class="canva-button roblox-btn px-6 py-2.5 text-sm"></button>
-    </form>
-    <div id="reflect-success" class="hidden mt-4 game-panel border-emerald-500 p-4 text-center">
-     <p data-template-id="reflect-success-msg" class="canva-text font-bold"></p>
-    </div>
-    <div id="reflect-error" class="hidden mt-4 game-panel border-red-500 p-4 text-center text-red-300 text-sm"></div>
-   </div><!-- VIEW: History -->
-   <div id="view-history" class="view fade-in"><button onclick="showView('view-worlds')" class="text-sm opacity-70 hover:opacity-100 flex items-center gap-1 mb-4"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Back</button>
-    <h3 data-template-id="history-heading" class="canva-text font-display text-lg font-bold text-emerald-400 mb-4"></h3>
-    <div id="history-list" class="space-y-3"></div>
-    <p id="history-empty" data-template-id="history-empty" class="canva-text text-center opacity-60 py-8"></p>
-   </div><!-- VIEW: Compass -->
-   <div id="view-compass" class="view fade-in"><button onclick="showView('view-worlds')" class="text-sm opacity-70 hover:opacity-100 flex items-center gap-1 mb-4"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Back</button>
-    <h2 data-template-id="compass-heading" class="canva-text font-display text-2xl font-bold text-emerald-400 mb-2"></h2>
-    <p data-template-id="compass-intro" class="canva-text text-sm opacity-70 mb-6"></p>
-    <div id="compass-stats" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6"></div>
-    <div class="game-panel p-6 mb-6">
-     <svg viewbox="0 0 200 200" class="w-full max-w-xs mx-auto" style="height:auto"><circle cx="100" cy="100" r="80" fill="none" stroke="#333" stroke-width="1" opacity="0.5" /> <circle cx="100" cy="100" r="60" fill="none" stroke="#333" stroke-width="1" opacity="0.5" /> <circle cx="100" cy="100" r="40" fill="none" stroke="#333" stroke-width="1" opacity="0.5" /> <text x="100" y="15" text-anchor="middle" fill="#94a3b8" font-size="10">
-       Observation
-      </text> <text x="185" y="105" text-anchor="start" fill="#94a3b8" font-size="10">
-       Data
-      </text> <text x="160" y="180" text-anchor="middle" fill="#94a3b8" font-size="10">
-       Concepts
-      </text> <text x="40" y="180" text-anchor="middle" fill="#94a3b8" font-size="10">
-       Solutions
-      </text> <text x="15" y="105" text-anchor="end" fill="#94a3b8" font-size="10">
-       Verification
-      </text> <text x="40" y="20" text-anchor="middle" fill="#94a3b8" font-size="10">
-       Reflection
-      </text> <polygon id="skill-polygon" points="100,100" fill="#10b981" fill-opacity="0.25" stroke="#10b981" stroke-width="2.5" />
-     </svg>
-    </div>
-    <div id="compass-insights" class="game-panel p-4 space-y-3"></div>
-   </div>
-  </div><!-- Floating Lumi Chat -->
-  <div id="lumi-float"><button class="lumi-float-btn" onclick="toggleChat()"> <img data-template-id="lumi-avatar-float" class="canva-image lumi-avatar floating" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:50%"> </button>
-   <div class="lumi-chat-panel" id="chat-panel">
-    <div class="flex items-center gap-2 p-3 bg-emerald-900/30 border-b border-emerald-800/50"><span class="font-bold text-sm flex-1">🌱 LUMI Chat</span> <span class="text-xs text-emerald-400">Online</span>
-    </div>
-    <div class="chat-msgs" id="chat-msgs">
-     <div class="chat-msg lumi">
-      Hi! I'm Lumi, your science buddy! How can I help? 🔬
-     </div>
-    </div>
-    <div class="chat-quickies"><button class="chat-q-btn" onclick="chatReply('Study tips')">💡 Tips</button> <button class="chat-q-btn" onclick="chatReply('What is XP?')">⭐ XP?</button> <button class="chat-q-btn" onclick="chatReply('Best mission?')">🎯 Mission</button> <button class="chat-q-btn" onclick="chatReply('About LUMI')">ℹ️ About</button> <button class="chat-q-btn" onclick="chatReply('SDGs?')">🌍 SDGs</button>
-    </div>
-   </div>
-  </div>
-  <script src="/_sdk/editing_sdk.js"></script>
-  <script src="/_sdk/data_sdk.js"></script>
-  <script>
-// Starfield
-(function(){const sf=document.getElementById('starfield');for(let i=0;i<80;i++){const s=document.createElement('div');s.className='star';s.style.width=s.style.height=Math.random()*2+1+'px';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDuration=Math.random()*3+2+'s';s.style.animationDelay=Math.random()*3+'s';sf.appendChild(s);}})();
 
-const STEPS=['observe','learn','simulate','quiz','argument','solution','verify','reflect'];
-const STEP_LABELS=['OBSERVE','LEARN','SIMULATE','QUIZ','ARGUMENT','SOLUTION','VERIFY','REFLECT'];
+    <script>
+      const STORE_KEY = "lumi-science-explorer-records";
+      const STEPS = ["observe", "learn", "simulate", "quiz", "argument", "solution", "verify", "reflect"];
+      const STEP_LABELS = ["OBSERVE", "LEARN", "SIMULATE", "QUIZ", "ARGUMENT", "SOLUTION", "VERIFY", "REFLECT"];
 
-let audioCtx;
-function playSound(type){
-  if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
-  osc.connect(gain);gain.connect(audioCtx.destination);gain.gain.value=0.12;
-  if(type==='click'){osc.frequency.value=600;osc.type='square';gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.08);osc.start();osc.stop(audioCtx.currentTime+0.08);}
-  else if(type==='success'){osc.frequency.value=523;osc.type='square';setTimeout(()=>{const o2=audioCtx.createOscillator(),g2=audioCtx.createGain();o2.connect(g2);g2.connect(audioCtx.destination);g2.gain.value=0.12;o2.frequency.value=659;o2.type='square';g2.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);o2.start();o2.stop(audioCtx.currentTime+0.2);},100);gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.15);osc.start();osc.stop(audioCtx.currentTime+0.15);}
-  else if(type==='xp'){osc.frequency.value=880;osc.type='sine';gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.3);osc.start();osc.stop(audioCtx.currentTime+0.3);}
-  else if(type==='wrong'){osc.frequency.value=200;osc.type='sawtooth';gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.2);osc.start();osc.stop(audioCtx.currentTime+0.2);}
-}
+      const LEVELS = [
+        { id: "kids", icon: "K", title: "Kids", desc: "Short prompts, easy missions." },
+        { id: "teen", icon: "T", title: "Teens", desc: "Data, quiz, and solutions." },
+        { id: "teacher", icon: "G", title: "Teacher", desc: "Class-ready guided flow." },
+      ];
 
-let difficultyLevel=null,currentWorld=null,currentMission=null,currentMissionData=null,currentStepIdx=0,selectedSolution=null,allRecords=[],quizPassed=false,currentSlide=0;
-
-function selectLevel(level){
-  playSound('click');difficultyLevel=level;
-  document.querySelectorAll('.level-option').forEach(o=>o.classList.remove('selected'));
-  event.currentTarget.classList.add('selected');
-  setTimeout(()=>{document.getElementById('view-level-select').classList.remove('active');document.getElementById('main-hud').classList.remove('hidden');showView('view-worlds');},400);
-}
-
-const WORLDS={
-  water:{title:'Water World',desc:'Explore water issues from rivers to your home',icon:'💧',color:'#22d3ee',
-    missions:{river:{title:'The River That Changed Color',data:[{label:'Water Color',value:'Murky brown',icon:'droplets'},{label:'Water pH',value:'5.2 (Acidic)',icon:'flask-round'},{label:'Smell',value:'Strong odor',icon:'wind'},{label:'Rainfall',value:'180mm/month',icon:'cloud-rain'},{label:'Waste',value:'Lots of plastic',icon:'trash-2'},{label:'Fish',value:'Declining',icon:'fish'}],question:'Which data is most important to identify the root cause?',learn:['<b>pH Scale:</b> 0-14. Clean water pH 6.5-8.5.','<b>Pollutants:</b> Harmful substances from households/industry.','<b>Ecosystem:</b> Fish and plants are interdependent.'],quiz:[{q:'What is the ideal pH for clean water?',options:['0-3','6.5-8.5','10-14','Not important'],correct:1},{q:'What happens if water is too acidic?',options:['Fish multiply','Ecosystem is disrupted','Water becomes clear','No effect'],correct:1}],variables:[{name:'Waste Dumped',min:0,max:100,default:80},{name:'Rainfall',min:0,max:100,default:90},{name:'Household Waste',min:0,max:100,default:70},{name:'Riverside Plants',min:0,max:100,default:20},{name:'Filter',min:0,max:100,default:10}],solutions:[{id:'a',text:'Clean surface trash from the river',effective:40,note:'Good for appearance, but source keeps flowing in.'},{id:'b',text:'Install simple water filters',effective:55,note:'Helps clarify, but doesn\'t stop contamination.'},{id:'c',text:'Stop waste discharge + plant riverside vegetation',effective:90,note:'Addresses the root cause!'},{id:'d',text:'Add new fish',effective:15,note:'New fish will die if water is polluted.'}]},
-    flood:{title:'Flooding After Heavy Rain',data:[{label:'Rainfall',value:'250mm/6hrs',icon:'cloud-rain'},{label:'Drainage',value:'Blocked',icon:'arrow-down'},{label:'Absorption',value:'90% concrete',icon:'square'},{label:'River',value:'Overflowing',icon:'waves'},{label:'Trees',value:'Cut down',icon:'tree-pine'},{label:'Water Level',value:'60cm on roads',icon:'ruler'}],question:'Why is flooding getting worse?',learn:['<b>Water Cycle:</b> Rain should absorb into the ground.','<b>Absorption Areas:</b> Open soil absorbs water.','<b>Drainage:</b> Must be free of trash.'],quiz:[{q:'What is the main function of absorption areas?',options:['Absorb rainwater','Parking space','Beautify the city','Dump site'],correct:0},{q:'Biopores help because...',options:['Add concrete','Increase water absorption','Block drainage','Add pollution'],correct:1}],variables:[{name:'Concrete Area',min:0,max:100,default:90},{name:'Drainage Trash',min:0,max:100,default:75},{name:'Trees/Parks',min:0,max:100,default:10},{name:'Biopores',min:0,max:100,default:5},{name:'Rainfall',min:0,max:100,default:95}],solutions:[{id:'a',text:'Pump water out of the city',effective:30,note:'Temporary.'},{id:'b',text:'Biopores + city parks + clean drainage',effective:88,note:'Increases absorption.'},{id:'c',text:'Build higher embankments',effective:40,note:'Expensive, can break.'},{id:'d',text:'Relocate residents',effective:15,note:'Not realistic.'}]},
-    clear_water:{title:'Clear Water Isn\'t Always Safe',data:[{label:'Appearance',value:'Crystal clear',icon:'droplets'},{label:'Bacteria',value:'High E.Coli',icon:'bug'},{label:'Mercury',value:'0.05 mg/L',icon:'flask-round'},{label:'Taste',value:'Normal',icon:'coffee'},{label:'Source',value:'Near farmland',icon:'map-pin'},{label:'Pesticides',value:'Detected',icon:'spray-can'}],question:'Water looks clear but contains bacteria and heavy metals.',learn:['<b>Invisible Contaminants:</b> Can\'t be seen by eye.','<b>WHO Standard:</b> Mercury limit 0.001 mg/L.','<b>Lab testing is required.</b>'],quiz:[{q:'WHO safe mercury limit?',options:['0.05 mg/L','0.001 mg/L','1 mg/L','No limit'],correct:1},{q:'Boiling water eliminates...',options:['Heavy metals','Bacteria','All contaminants','Color'],correct:1}],variables:[{name:'Farm Distance',min:0,max:100,default:10},{name:'Well Depth',min:0,max:100,default:30},{name:'Pesticides',min:0,max:100,default:85},{name:'Carbon Filter',min:0,max:100,default:5},{name:'Testing',min:0,max:100,default:10}],solutions:[{id:'a',text:'Drink directly, it looks clear',effective:5,note:'Very dangerous!'},{id:'b',text:'Boil before drinking',effective:45,note:'Kills bacteria but not heavy metals.'},{id:'c',text:'Multi-stage filter + regular testing + reduce pesticides',effective:92,note:'Addresses all contaminants!'},{id:'d',text:'Switch to river water',effective:25,note:'Also potentially contaminated.'}]},
-    clean_solution:{title:'Design Clean Water for a School',data:[{label:'Source',value:'Murky well',icon:'droplets'},{label:'Students',value:'300 people',icon:'users'},{label:'Need',value:'600 L/day',icon:'beaker'},{label:'Budget',value:'$125',icon:'wallet'},{label:'Space',value:'4×3 meters',icon:'maximize'},{label:'Electricity',value:'Available',icon:'zap'}],question:'How to design a clean water system for 300 students?',learn:['<b>Multi-Stage Filtration:</b> Gravel → sand → activated carbon.','<b>Disinfection:</b> UV or chlorine.','<b>Capacity:</b> Min 600L/day.'],quiz:[{q:'Correct filtration order?',options:['Carbon → sand → gravel','Gravel → sand → carbon','Sand → carbon → gravel','All the same'],correct:1},{q:'UV disinfection is useful for...',options:['Removing color','Killing microbes','Adding minerals','Changing pH'],correct:1}],variables:[{name:'Filter Layers',min:0,max:100,default:30},{name:'UV Disinfection',min:0,max:100,default:0},{name:'Tank',min:0,max:100,default:40},{name:'Maintenance',min:0,max:100,default:20},{name:'Education',min:0,max:100,default:15}],solutions:[{id:'a',text:'Buy bottled water daily',effective:35,note:'Expensive long-term.'},{id:'b',text:'Gravel-sand-carbon filter + UV + tank + maintenance',effective:93,note:'Complete solution!'},{id:'c',text:'Boil all water in the kitchen',effective:40,note:'Not practical.'},{id:'d',text:'Drink directly from the well',effective:5,note:'Dangerous.'}]}
-  }},
-  air:{title:'Air City',desc:'Investigate air pollution and its impacts',icon:'🏭',color:'#fbbf24',
-    missions:{vehicle:{title:'Vehicle Pollution Near School',data:[{label:'Vehicles/hr',value:'1500+',icon:'car'},{label:'PM2.5',value:'85 µg/m³',icon:'cloud'},{label:'CO₂',value:'High',icon:'flame'},{label:'Public Transit',value:'Rare',icon:'bus'},{label:'School Distance',value:'< 50m',icon:'map-pin'},{label:'Complaints',value:'Shortness of breath',icon:'activity'}],question:'School is 50m from main road. PM2.5 is high.',learn:['<b>PM2.5:</b> Particles < 2.5µm enter lungs.','<b>Vehicle Emissions:</b> CO, NOx, PM2.5.','<b>WHO:</b> Minimum 150m from main roads.'],quiz:[{q:'PM2.5 is dangerous because...',options:['It\'s large','It enters the lungs','It\'s colorful','It smells'],correct:1},{q:'Safe distance from main roads per WHO?',options:['10m','50m','150m','1km'],correct:2}],variables:[{name:'Vehicles',min:0,max:100,default:90},{name:'Public Transit',min:0,max:100,default:15},{name:'Trees',min:0,max:100,default:10},{name:'Classroom Filter',min:0,max:100,default:5},{name:'Bike Lanes',min:0,max:100,default:10}],solutions:[{id:'a',text:'Give masks to students',effective:25,note:'Source remains.'},{id:'b',text:'Trees + filter + public transit + bike lanes',effective:88,note:'Multi-level approach.'},{id:'c',text:'Close windows',effective:20,note:'Stuffy air.'},{id:'d',text:'Move the school',effective:30,note:'Expensive.'}]},
-    burning:{title:'Neighborhood Waste Burning',data:[{label:'Frequency',value:'Every evening',icon:'flame'},{label:'Type',value:'Plastic+organic',icon:'trash-2'},{label:'Smoke',value:'Thick black',icon:'cloud'},{label:'Dioxins',value:'Detected',icon:'alert-triangle'},{label:'Respiratory',value:'Increasing',icon:'activity'},{label:'Alternative',value:'No landfill',icon:'map-pin'}],question:'Residents burn waste because there\'s no landfill.',learn:['<b>Dioxins:</b> Carcinogen from low-temp plastic burning.','<b>Respiratory infections increasing.</b>','<b>Hierarchy:</b> Reduce → Reuse → Recycle.'],quiz:[{q:'Dioxins are produced from...',options:['Low-temp plastic burning','Clean water','Food','Plants'],correct:0},{q:'Correct waste hierarchy?',options:['Recycle → Reduce → Reuse','Reduce → Reuse → Recycle','Reuse → Reduce → Recycle','Dump everything'],correct:1}],variables:[{name:'Burning',min:0,max:100,default:85},{name:'Sorting',min:0,max:100,default:10},{name:'Composting',min:0,max:100,default:5},{name:'Waste Bank',min:0,max:100,default:5},{name:'Landfill',min:0,max:100,default:0}],solutions:[{id:'a',text:'Ban without alternatives',effective:20,note:'Not fair.'},{id:'b',text:'Sorting + composting + waste bank + mini landfill',effective:90,note:'Real alternatives!'},{id:'c',text:'Burn further away',effective:15,note:'Moves the problem.'},{id:'d',text:'Ignore it',effective:5,note:'Dangerous.'}]},
-    ventilation:{title:'Poor Room Ventilation',data:[{label:'CO₂',value:'2500 ppm',icon:'wind'},{label:'Windows',value:'Rarely open',icon:'square'},{label:'AC',value:'Recirculation',icon:'thermometer'},{label:'Students',value:'40 people',icon:'users'},{label:'Drowsiness',value:'70%',icon:'moon'},{label:'Temperature',value:'30°C',icon:'thermometer'}],question:'High CO₂ = drowsiness. Solution?',learn:['<b>CO₂:</b> >1000 ppm reduces concentration.','<b>AC ≠ ventilation.</b>','<b>Cross ventilation is effective.</b>'],quiz:[{q:'CO₂ limit for optimal concentration?',options:['5000 ppm','2500 ppm','1000 ppm','No limit'],correct:2},{q:'Cross ventilation means...',options:['Stronger AC','Windows open on two sides','Fan on one side','Door closed'],correct:1}],variables:[{name:'Windows',min:0,max:100,default:10},{name:'Number of Students',min:0,max:100,default:90},{name:'Exhaust',min:0,max:100,default:5},{name:'Plants',min:0,max:100,default:5},{name:'Fresh Air AC',min:0,max:100,default:0}],solutions:[{id:'a',text:'Stronger AC',effective:20,note:'CO₂ stays.'},{id:'b',text:'Cross ventilation + exhaust + fewer students',effective:88,note:'Lowers CO₂.'},{id:'c',text:'Give coffee',effective:5,note:'Not a solution.'},{id:'d',text:'Study outside',effective:35,note:'Not practical.'}]},
-    trees:{title:'Trees and Air Quality',data:[{label:'Trees',value:'12 (was 150)',icon:'tree-pine'},{label:'Road Temp',value:'38°C',icon:'thermometer'},{label:'Park Temp',value:'31°C',icon:'thermometer'},{label:'Road AQI',value:'156',icon:'gauge'},{label:'Park AQI',value:'68',icon:'gauge'},{label:'Felling',value:'Road widening',icon:'axe'}],question:'Temperature and AQI differ drastically. Connection?',learn:['<b>Urban Heat Island:</b> Concrete absorbs heat.','<b>1 tree = 22kg CO₂/year.</b>','<b>Trade-off:</b> Roads vs pollution absorbers.'],quiz:[{q:'1 tree absorbs how much CO₂/year?',options:['5kg','22kg','100kg','500kg'],correct:1},{q:'Urban Heat Island is caused by...',options:['Too many trees','Concrete absorbing heat','Heavy rain','Strong wind'],correct:1}],variables:[{name:'Number of Trees',min:0,max:100,default:8},{name:'Road Width',min:0,max:100,default:90},{name:'Vehicles',min:0,max:100,default:85},{name:'City Parks',min:0,max:100,default:10},{name:'Vertical Garden',min:0,max:100,default:5}],solutions:[{id:'a',text:'Plant trees on median',effective:50,note:'Takes time.'},{id:'b',text:'Trees + vertical garden + reduce vehicles + parks',effective:90,note:'Multi-level!'},{id:'c',text:'Outdoor AC',effective:5,note:'Not realistic.'},{id:'d',text:'Paint roads white',effective:25,note:'Doesn\'t absorb pollutants.'}]},
-    health_risk:{title:'Health Risks of Pollution',data:[{label:'Child Respiratory',value:'+40%',icon:'activity'},{label:'Asthma',value:'15% of students',icon:'heart-pulse'},{label:'Sick Days',value:'12/year',icon:'calendar'},{label:'Factory Distance',value:'500m',icon:'factory'},{label:'AQI',value:'142',icon:'gauge'},{label:'Exercise',value:'Still outdoor',icon:'dumbbell'}],question:'Respiratory infections up 40%. Is treatment enough?',learn:['<b>Chronic exposure = permanent damage.</b>','<b>Children breathe faster.</b>','<b>Prevention is 10x more effective.</b>'],quiz:[{q:'Why are children more vulnerable to pollution?',options:['They\'re taller','They breathe faster','They don\'t eat well','They sleep more'],correct:1},{q:'Prevention vs treatment?',options:['Same','Treatment is better','Prevention is 10x more effective','Neither needed'],correct:2}],variables:[{name:'Exposure',min:0,max:100,default:85},{name:'Exercise in High AQI',min:0,max:100,default:70},{name:'Filter',min:0,max:100,default:10},{name:'Monitoring',min:0,max:100,default:5},{name:'Advocacy',min:0,max:100,default:5}],solutions:[{id:'a',text:'Give free medicine',effective:20,note:'Treats symptoms only.'},{id:'b',text:'Monitor AQI + adjust activities + filter + advocacy',effective:90,note:'Protection + root cause!'},{id:'c',text:'Ban exercise',effective:30,note:'Not comprehensive.'},{id:'d',text:'Move the school',effective:40,note:'Expensive.'}]}
-  }},
-  waste:{title:'Waste Zone',desc:'Trace the journey of waste',icon:'♻️',color:'#38bdf8',
-    missions:{ocean_plastic:{title:'Ocean of Plastic',data:[{label:'Waste/day',value:'2.5 tons',icon:'trash-2'},{label:'Recycled',value:'9%',icon:'recycle'},{label:'Microplastic',value:'In fish',icon:'fish'},{label:'Bags',value:'500/home/year',icon:'shopping-bag'},{label:'Decompose',value:'450+ years',icon:'clock'},{label:'Animals',value:'Turtles, birds',icon:'bird'}],question:'Why isn\'t beach cleanup enough?',learn:['<b>Microplastics:</b> <5mm enter food chain.','<b>Plastic breaks apart but never disappears.</b>','<b>Reduce > Recycle.</b>'],quiz:[{q:'How long does plastic take to decompose?',options:['1 year','50 years','450+ years','Never'],correct:2},{q:'Microplastics enter the body through...',options:['Air only','Food chain','Touch','Sound'],correct:1}],variables:[{name:'Plastic Use',min:0,max:100,default:85},{name:'Recycling',min:0,max:100,default:9},{name:'Beach Cleanup',min:0,max:100,default:20},{name:'Alternatives',min:0,max:100,default:10},{name:'Education',min:0,max:100,default:15}],solutions:[{id:'a',text:'Clean beaches weekly',effective:30,note:'New plastic keeps coming.'},{id:'b',text:'Reduce plastic + alternatives + education',effective:90,note:'From the source!'},{id:'c',text:'Burn everything',effective:20,note:'Toxic fumes.'},{id:'d',text:'Dump in deep ocean',effective:5,note:'Still destructive.'}]},
-    ewaste:{title:'Hazardous E-Waste',data:[{label:'Old Phones',value:'3-5/home',icon:'smartphone'},{label:'Recycled',value:'<20%',icon:'recycle'},{label:'Metals',value:'Lead, mercury',icon:'alert-triangle'},{label:'To Landfill',value:'80%',icon:'trash-2'},{label:'Value',value:'Gold, copper',icon:'gem'},{label:'Workers',value:'No protection',icon:'hard-hat'}],question:'Old phones: gold AND poison. Safe recycling?',learn:['<b>E-Waste:</b> Contains 60+ elements.','<b>Urban Mining is more efficient.</b>','<b>Danger of burning PCB boards.</b>'],quiz:[{q:'Urban mining means...',options:['Digging city soil','Extracting metals from e-waste','Mining rocks','Dumping waste'],correct:1},{q:'E-waste contains how many elements?',options:['5','20','60+','100+'],correct:2}],variables:[{name:'E-Waste to Landfill',min:0,max:100,default:80},{name:'Collection',min:0,max:100,default:10},{name:'Safe Recycling',min:0,max:100,default:5},{name:'Education',min:0,max:100,default:10},{name:'Policy',min:0,max:100,default:5}],solutions:[{id:'a',text:'Keep in drawer',effective:15,note:'Batteries leak.'},{id:'b',text:'Collect + formal recycling + producer responsibility',effective:88,note:'Safe!'},{id:'c',text:'Open burning',effective:5,note:'Dangerous.'},{id:'d',text:'Regular trash',effective:10,note:'Contaminates groundwater.'}]},
-    food_waste:{title:'Wasted Food',data:[{label:'Wasted',value:'30% of cafeteria',icon:'utensils'},{label:'Portions',value:'Too large',icon:'plus-circle'},{label:'Leftovers',value:'25%',icon:'pie-chart'},{label:'Methane',value:'From rotting',icon:'cloud'},{label:'Cost',value:'$300/month',icon:'wallet'},{label:'Compost',value:'None',icon:'leaf'}],question:'30% wasted = wasted money + methane.',learn:['<b>Methane is 25x stronger than CO₂.</b>','<b>Mindful portions reduce waste.</b>','<b>Compost = fertilizer.</b>'],quiz:[{q:'Methane is how many times stronger than CO₂?',options:['2x','10x','25x','100x'],correct:2},{q:'Compost is made from...',options:['Plastic','Organic waste','Metal','Glass'],correct:1}],variables:[{name:'Oversized Portions',min:0,max:100,default:75},{name:'Awareness',min:0,max:100,default:15},{name:'Composting',min:0,max:100,default:5},{name:'Flexible Menu',min:0,max:100,default:10},{name:'Monitoring',min:0,max:100,default:5}],solutions:[{id:'a',text:'Just throw it away',effective:5,note:'Waste of money.'},{id:'b',text:'Flexible portions + compost + monitoring + education',effective:90,note:'From the source!'},{id:'c',text:'Force everyone to finish',effective:25,note:'Unhealthy.'},{id:'d',text:'Reduce menu',effective:30,note:'Nutrition?'}]}
-  }},
-  energy:{title:'Energy Lab',desc:'Compare energy use and find savings',icon:'⚡',color:'#a78bfa',
-    missions:{lamp:{title:'Fluorescent vs LED',data:[{label:'Fluorescent',value:'36W × 50',icon:'lightbulb'},{label:'LED',value:'12W equivalent',icon:'lightbulb'},{label:'Hours On',value:'10 hrs/day',icon:'clock'},{label:'Fluorescent Cost',value:'$200/month',icon:'wallet'},{label:'LED Cost',value:'$70/month',icon:'wallet'},{label:'LED Lifespan',value:'50,000 hrs',icon:'timer'}],question:'LED is 3x cheaper. Why haven\'t we switched?',learn:['<b>Watts vs Lumens.</b>','<b>Lifecycle cost analysis.</b>','<b>ROI in 3-6 months.</b>'],quiz:[{q:'LED saves more because...',options:['More expensive','Lower watts, same lumens','Brighter','Nice colors'],correct:1},{q:'LED ROI is approximately...',options:['1 week','3-6 months','5 years','Never'],correct:1}],variables:[{name:'Replaced',min:0,max:100,default:10},{name:'Hours On',min:0,max:100,default:80},{name:'Sensors',min:0,max:100,default:0},{name:'Schedule',min:0,max:100,default:20},{name:'Budget',min:0,max:100,default:30}],solutions:[{id:'a',text:'Replace all at once',effective:70,note:'Big investment.'},{id:'b',text:'Replace gradually + sensors + schedule',effective:92,note:'Realistic!'},{id:'c',text:'Turn off during breaks',effective:25,note:'Fluorescent still wasteful.'},{id:'d',text:'Wait until broken',effective:10,note:'3x cost continues.'}]},
-    solar:{title:'Solar Panels for School',data:[{label:'Roof',value:'400 m²',icon:'maximize'},{label:'Sunlight',value:'5 peak hours',icon:'sun'},{label:'Need',value:'3000 kWh/month',icon:'zap'},{label:'Bill',value:'$280/month',icon:'wallet'},{label:'Investment',value:'$9,500',icon:'credit-card'},{label:'Lifespan',value:'25+ years',icon:'timer'}],question:'Solar is expensive upfront. How long to break even?',learn:['<b>Break-Even in 5-7 years.</b>','<b>Net Metering.</b>','<b>1 kWh = 0.7 kg CO₂.</b>'],quiz:[{q:'Solar panel break-even is approximately...',options:['1 month','1 year','5-7 years','50 years'],correct:2},{q:'1 kWh from coal produces...',options:['0 CO₂','0.7 kg CO₂','7 kg CO₂','70 kg CO₂'],correct:1}],variables:[{name:'Panel Area',min:0,max:100,default:20},{name:'Efficiency',min:0,max:100,default:40},{name:'Net Metering',min:0,max:100,default:0},{name:'Maintenance',min:0,max:100,default:30},{name:'Education',min:0,max:100,default:15}],solutions:[{id:'a',text:'Too expensive, skip',effective:10,note:'Miss savings.'},{id:'b',text:'Gradual + net metering + monitoring',effective:90,note:'Realistic!'},{id:'c',text:'All at once with debt',effective:50,note:'Heavy payments.'},{id:'d',text:'Wait 10 years',effective:15,note:'Lost savings.'}]},
-    habits:{title:'Energy-Saving Habits',data:[{label:'Left On',value:'30%',icon:'power'},{label:'Standby',value:'10% of bill',icon:'monitor'},{label:'Chargers',value:'All plugged in',icon:'battery-charging'},{label:'Schedule',value:'None',icon:'clipboard'},{label:'Awareness',value:'Low',icon:'eye-off'},{label:'Potential',value:'$125/month',icon:'piggy-bank'}],question:'How to change habits?',learn:['<b>Phantom Load 5-10%.</b>','<b>Habit change takes 21-66 days.</b>','<b>Gamification reduces 15-25%.</b>'],quiz:[{q:'Phantom load means...',options:['Power outage','Energy used while device is off/standby','Free electricity','Solar power'],correct:1},{q:'How many days to form a new habit?',options:['1 day','7 days','21-66 days','1 year'],correct:2}],variables:[{name:'Left On',min:0,max:100,default:80},{name:'Stickers',min:0,max:100,default:10},{name:'Officers',min:0,max:100,default:5},{name:'Competition',min:0,max:100,default:0},{name:'Timers',min:0,max:100,default:5}],solutions:[{id:'a',text:'Stickers on switches',effective:30,note:'Gets ignored.'},{id:'b',text:'Officers + competition + timers + monitoring',effective:88,note:'Changes behavior!'},{id:'c',text:'Fines',effective:25,note:'Fear-based.'},{id:'d',text:'Ignore it',effective:5,note:'Wasted.'}]},
-    ac:{title:'AC vs Natural Ventilation',data:[{label:'AC Units',value:'2×1.5HP',icon:'thermometer'},{label:'Electricity',value:'$500/month',icon:'zap'},{label:'Outside',value:'32°C',icon:'sun'},{label:'Inside',value:'22°C',icon:'snowflake'},{label:'Ventilation',value:'None',icon:'wind'},{label:'Windows',value:'Closed',icon:'square'}],question:'AC uses 60% of electricity. Stay comfortable?',learn:['<b>24-26°C is comfortable enough.</b>','<b>Cross ventilation -3-5°C.</b>','<b>Hybrid cooling.</b>'],quiz:[{q:'Energy-efficient yet comfortable AC temp?',options:['18°C','22°C','24-26°C','30°C'],correct:2},{q:'Cross ventilation lowers temperature by...',options:['0°C','3-5°C','10°C','20°C'],correct:1}],variables:[{name:'AC Setting',min:0,max:100,default:90},{name:'Ventilation',min:0,max:100,default:5},{name:'Fans',min:0,max:100,default:10},{name:'Insulation',min:0,max:100,default:10},{name:'AC Schedule',min:0,max:100,default:15}],solutions:[{id:'a',text:'Turn off all AC',effective:30,note:'Too hot.'},{id:'b',text:'25°C + ventilation + fans + insulation + schedule',effective:90,note:'Saves 50%+!'},{id:'c',text:'Add more AC',effective:5,note:'More cost.'},{id:'d',text:'Move to mornings',effective:35,note:'Not realistic.'}]},
-    school_audit:{title:'School Energy Audit',data:[{label:'Bill',value:'$950/month',icon:'zap'},{label:'AC',value:'60%',icon:'thermometer'},{label:'Lights',value:'20%',icon:'lightbulb'},{label:'Computers',value:'12%',icon:'monitor'},{label:'Other',value:'8%',icon:'more-horizontal'},{label:'Potential',value:'40-50% savings',icon:'trending-down'}],question:'Which priority is most effective?',learn:['<b>Systematic Energy Audit.</b>','<b>Pareto 80/20.</b>','<b>Highest ROI first.</b>'],quiz:[{q:'Pareto 80/20 means...',options:['80% effort 20% results','20% causes 80% impact','80% discount 20% price','No relation'],correct:1},{q:'Biggest energy consumer in schools is usually...',options:['Lights','AC','Computers','Elevators'],correct:1}],variables:[{name:'AC Efficiency',min:0,max:100,default:15},{name:'LED',min:0,max:100,default:10},{name:'PC Timer',min:0,max:100,default:10},{name:'Habits',min:0,max:100,default:20},{name:'Solar Panel',min:0,max:100,default:0}],solutions:[{id:'a',text:'Focus on lights only',effective:35,note:'AC is 60% — priority.'},{id:'b',text:'AC → lights → timers → habits → solar',effective:93,note:'Pareto!'},{id:'c',text:'Jump to solar',effective:40,note:'Waste continues.'},{id:'d',text:'Cut 50% blindly',effective:15,note:'No plan.'}]}
-  }},
-  climate:{title:'Climate Dome',desc:'Understand climate change',icon:'🌍',color:'#f43f5e',
-    missions:{greenhouse:{title:'Greenhouse Effect',data:[{label:'CO₂',value:'421 ppm',icon:'trending-up'},{label:'Temperature',value:'+1.1°C',icon:'thermometer'},{label:'Ice Caps',value:'-13%/decade',icon:'snowflake'},{label:'Sea Level',value:'+20cm',icon:'waves'},{label:'Source',value:'Fossil 73%',icon:'flame'},{label:'Limit',value:'1.5°C',icon:'alert-triangle'}],question:'"Only" 1.1°C but massive impact. Why?',learn:['<b>CO₂ traps heat.</b>','<b>Tipping points.</b>','<b>0.5°C = 2x water loss.</b>'],quiz:[{q:'Current CO₂ level is approximately...',options:['200 ppm','300 ppm','421 ppm','600 ppm'],correct:2},{q:'Tipping point means...',options:['Point of no return','Mountain peak','Season start','Year end'],correct:0}],variables:[{name:'Emissions',min:0,max:100,default:85},{name:'Renewables',min:0,max:100,default:15},{name:'Forests',min:0,max:100,default:30},{name:'Transport',min:0,max:100,default:10},{name:'Industry',min:0,max:100,default:20}],solutions:[{id:'a',text:'Plant trees only',effective:25,note:'Not enough.'},{id:'b',text:'Renewables + forests + transport + efficiency',effective:90,note:'All sectors!'},{id:'c',text:'More AC',effective:5,note:'Adds emissions!'},{id:'d',text:'Wait for technology',effective:15,note:'Already at the edge.'}]},
-    extreme_weather:{title:'Extreme Weather',data:[{label:'Floods',value:'+40%',icon:'cloud-rain'},{label:'Droughts',value:'Longer',icon:'sun'},{label:'Storms',value:'More intense',icon:'wind'},{label:'Crop Failure',value:'3x/5 years',icon:'wheat'},{label:'Displaced',value:'21 million/year',icon:'users'},{label:'Cost',value:'$300M+',icon:'trending-up'}],question:'Data linking extreme weather to climate?',learn:['<b>7% more water vapor per 1°C.</b>','<b>Jet stream is changing.</b>','<b>Adaptation + Mitigation.</b>'],quiz:[{q:'Per 1°C warming, water vapor increases...',options:['1%','7%','50%','100%'],correct:1},{q:'Mitigation means...',options:['Adapting','Reducing the cause','Ignoring','Adding emissions'],correct:1}],variables:[{name:'Emissions',min:0,max:100,default:85},{name:'Early Warning',min:0,max:100,default:20},{name:'Infrastructure',min:0,max:100,default:15},{name:'Crop Insurance',min:0,max:100,default:10},{name:'Mitigation',min:0,max:100,default:10}],solutions:[{id:'a',text:'Embankments only',effective:30,note:'Partial adaptation.'},{id:'b',text:'Mitigation + warning + infrastructure + food resilience',effective:92,note:'Complete!'},{id:'c',text:'Relocate everyone',effective:20,note:'Not realistic.'},{id:'d',text:'Hope for the best',effective:5,note:'Needs action.'}]},
-    local_action:{title:'School Climate Action',data:[{label:'Carbon',value:'45 tons/year',icon:'footprints'},{label:'Electricity',value:'60% coal',icon:'zap'},{label:'Transport',value:'80% cars',icon:'car'},{label:'Waste',value:'Unsorted',icon:'trash-2'},{label:'Cafeteria',value:'Lots of plastic',icon:'utensils'},{label:'Curriculum',value:'None',icon:'book'}],question:'45 tons CO₂/year. What can students change?',learn:['<b>Carbon Footprint.</b>','<b>Scope 1, 2, 3.</b>','<b>Student Agency.</b>'],quiz:[{q:'Carbon footprint measures...',options:['Shoe size','Total CO₂ emissions','Footprint on beach','Number of trees'],correct:1},{q:'Scope 2 emissions means...',options:['Direct emissions','Emissions from purchased electricity','Supply chain emissions','Natural emissions'],correct:1}],variables:[{name:'Save Electricity',min:0,max:100,default:15},{name:'Reduce Cars',min:0,max:100,default:10},{name:'Sort Waste',min:0,max:100,default:10},{name:'Reduce Plastic',min:0,max:100,default:10},{name:'Education',min:0,max:100,default:5}],solutions:[{id:'a',text:'Teachers only',effective:15,note:'Needs community.'},{id:'b',text:'Green team + save energy + carpooling + zero waste + curriculum',effective:90,note:'Students = agents!'},{id:'c',text:'Posters only',effective:20,note:'Without action.'},{id:'d',text:'Carbon offset',effective:25,note:'Not educational.'}]}
-  }},
-  food:{title:'Food & Health',desc:'Food safety and nutrition',icon:'🥗',color:'#22c55e',
-    missions:{safety:{title:'School Snack Safety',data:[{label:'Dyes',value:'Artificial',icon:'palette'},{label:'Storage',value:'No refrigeration',icon:'thermometer'},{label:'Handwashing',value:'Rare',icon:'hand'},{label:'Expiry',value:'None listed',icon:'tag'},{label:'Flies',value:'Many',icon:'bug'},{label:'Sick',value:'8/week',icon:'activity'}],question:'8 students sick/week. Cause?',learn:['<b>Bacteria thrive at 4-60°C.</b>','<b>Textile dyes damage organs.</b>','<b>Handwashing = -50% risk.</b>'],quiz:[{q:'Bacteria danger zone?',options:['0-4°C','4-60°C','60-100°C','100°C+'],correct:1},{q:'Handwashing reduces risk by...',options:['10%','25%','50%','100%'],correct:2}],variables:[{name:'Hygiene',min:0,max:100,default:25},{name:'Refrigeration',min:0,max:100,default:15},{name:'Handwashing',min:0,max:100,default:30},{name:'Ingredient Check',min:0,max:100,default:10},{name:'Labels',min:0,max:100,default:20}],solutions:[{id:'a',text:'Ban snacks',effective:35,note:'Not educational.'},{id:'b',text:'Hygiene standards + refrigeration + ingredient check + education',effective:90,note:'Systematic!'},{id:'c',text:'Give medicine',effective:10,note:'Treats symptoms.'},{id:'d',text:'Homemade only',effective:40,note:'Not guaranteed.'}]},
-    nutrition:{title:'Balanced Nutrition vs Junk Food',data:[{label:'Breakfast',value:'40% skip',icon:'sunrise'},{label:'Snacks',value:'Fried+sweet',icon:'cookie'},{label:'Fruits/Vegs',value:'<2 servings',icon:'apple'},{label:'Focus',value:'Drops by noon',icon:'brain'},{label:'Obesity',value:'18%',icon:'scale'},{label:'Anemia',value:'25% of girls',icon:'droplet'}],question:'40% skip breakfast, focus drops.',learn:['<b>Brain glucose drops 20-30%.</b>','<b>Sugar rush = crash.</b>','<b>Low iron = fatigue.</b>'],quiz:[{q:'Without breakfast, brain glucose drops...',options:['5%','10%','20-30%','50%'],correct:2},{q:'Anemia is caused by lack of...',options:['Vitamin C','Iron','Calcium','Protein'],correct:1}],variables:[{name:'No Breakfast',min:0,max:100,default:80},{name:'Junk Food',min:0,max:100,default:75},{name:'Nutrition Ed',min:0,max:100,default:10},{name:'Healthy Cafeteria',min:0,max:100,default:15},{name:'Breakfast Program',min:0,max:100,default:5}],solutions:[{id:'a',text:'Ban sweets',effective:20,note:'Restrictive.'},{id:'b',text:'Breakfast program + healthy cafeteria + education + tasty options',effective:90,note:'Delicious alternatives!'},{id:'c',text:'Give vitamins',effective:30,note:'Doesn\'t replace food.'},{id:'d',text:'Ignore it',effective:10,note:'Harmful.'}]},
-    water_drink:{title:'Drinking Enough Water',data:[{label:'Water/day',value:'<4 glasses',icon:'glass-water'},{label:'Sweet Drinks',value:'3-4 glasses',icon:'cup-soda'},{label:'Sugar',value:'3x recommended',icon:'candy'},{label:'Complaints',value:'Dizzy, tired',icon:'frown'},{label:'Urine',value:'Dark yellow',icon:'droplet'},{label:'Fountain',value:'Broken',icon:'x-circle'}],question:'Not enough water but 4 glasses of sugary drinks.',learn:['<b>-2% fluid = cognitive decline.</b>','<b>1 sweet tea = 5-7 spoons of sugar.</b>','<b>Clear urine = hydrated.</b>'],quiz:[{q:'2% dehydration causes...',options:['Nothing','Cognitive decline','Severe illness','Fainting'],correct:1},{q:'1 glass of sweet tea contains...',options:['1 spoon sugar','3 spoons sugar','5-7 spoons sugar','0 sugar'],correct:2}],variables:[{name:'Plain Water',min:0,max:100,default:20},{name:'Sweet Drinks',min:0,max:100,default:80},{name:'Fountain',min:0,max:100,default:10},{name:'Education',min:0,max:100,default:10},{name:'Own Bottle',min:0,max:100,default:15}],solutions:[{id:'a',text:'Ban sweet drinks',effective:25,note:'Hard to enforce.'},{id:'b',text:'Fix fountain + education + challenge + own bottle',effective:88,note:'Access + habits!'},{id:'c',text:'Replace with juice',effective:30,note:'Also sugary!'},{id:'d',text:'Ignore it',effective:5,note:'Dehydration.'}]}
-  }},
-  biodiversity:{title:'Biodiversity Forest',desc:'Why biodiversity matters',icon:'🌿',color:'#ec4899',
-    missions:{habitat_loss:{title:'Habitat Loss',data:[{label:'Deforested',value:'500 ha/year',icon:'axe'},{label:'Threatened',value:'12 species',icon:'bird'},{label:'Corridors',value:'Severed',icon:'route'},{label:'Poaching',value:'Still active',icon:'target'},{label:'Farming',value:'Expanding',icon:'wheat'},{label:'Tigers',value:'-60%',icon:'paw-print'}],question:'Tigers down 60%. Is banning hunting enough?',learn:['<b>Habitat fragmentation.</b>','<b>Predator extinction → herbivore explosion.</b>','<b>Ecological corridors.</b>'],quiz:[{q:'Habitat fragmentation means...',options:['Habitat becomes whole','Habitat gets cut into pieces','Habitat grows','No effect'],correct:1},{q:'Without predators, herbivores...',options:['Stay stable','Decline','Explode in population','Go extinct'],correct:2}],variables:[{name:'Deforestation',min:0,max:100,default:80},{name:'Corridors',min:0,max:100,default:10},{name:'Anti-Poaching',min:0,max:100,default:30},{name:'Reforestation',min:0,max:100,default:15},{name:'Farming',min:0,max:100,default:75}],solutions:[{id:'a',text:'Ban hunting only',effective:35,note:'Habitat still shrinks.'},{id:'b',text:'Stop deforestation + corridors + reforest + limit farming',effective:92,note:'Root cause: habitat!'},{id:'c',text:'Zoos',effective:20,note:'Not wild.'},{id:'d',text:'City trees',effective:15,note:'Not habitat.'}]},
-    coral:{title:'Coral Bleaching',data:[{label:'Sea Temp',value:'+1.5°C',icon:'thermometer'},{label:'Bleached',value:'60%',icon:'alert-triangle'},{label:'Fish',value:'-40%',icon:'fish'},{label:'Fishers',value:'Declining',icon:'anchor'},{label:'Sediment',value:'High',icon:'layers'},{label:'Tourism',value:'Declining',icon:'glasses'}],question:'Coral bleaching = stress. Main cause?',learn:['<b>Bleaching: algae expelled when stressed.</b>','<b>25% marine species depend on coral.</b>','<b>Sedimentation covers coral.</b>'],quiz:[{q:'Bleaching happens because...',options:['Water is too cold','Coral is stressed, expels algae','Too many fish','Water is too deep'],correct:1},{q:'What % of marine species depend on coral?',options:['5%','10%','25%','50%'],correct:2}],variables:[{name:'Temperature',min:0,max:100,default:80},{name:'Sediment',min:0,max:100,default:70},{name:'Protection',min:0,max:100,default:15},{name:'Reforestation',min:0,max:100,default:10},{name:'Emissions',min:0,max:100,default:10}],solutions:[{id:'a',text:'Artificial coral',effective:35,note:'Will bleach too.'},{id:'b',text:'Reduce emissions + protect + reforest + reduce sediment',effective:90,note:'Cause + pressure!'},{id:'c',text:'Ban snorkeling',effective:15,note:'Not the main cause.'},{id:'d',text:'Let it recover',effective:10,note:'It can\'t.'}]},
-    pollinators:{title:'Disappearing Bees',data:[{label:'Bees',value:'-30%',icon:'bug'},{label:'Pesticides',value:'Neonicotinoids',icon:'spray-can'},{label:'Flowers',value:'-70%',icon:'flower'},{label:'Harvest',value:'Declining',icon:'apple'},{label:'Monoculture',value:'Dominant',icon:'tree-pine'},{label:'Contribution',value:'75% of food',icon:'leaf'}],question:'75% of food needs pollinators. Bees down 30%.',learn:['<b>Pollination needed for fruiting.</b>','<b>Neonicotinoids damage navigation.</b>','<b>Monoculture eliminates flowers.</b>'],quiz:[{q:'What % of food needs pollinators?',options:['25%','50%','75%','100%'],correct:2},{q:'Neonicotinoids harm bees by...',options:['Killing instantly','Damaging navigation','Making stronger','No effect'],correct:1}],variables:[{name:'Pesticides',min:0,max:100,default:80},{name:'Wildflowers',min:0,max:100,default:15},{name:'Monoculture',min:0,max:100,default:85},{name:'Pollinator Garden',min:0,max:100,default:5},{name:'Organic',min:0,max:100,default:10}],solutions:[{id:'a',text:'Manual pollination',effective:20,note:'Not sustainable.'},{id:'b',text:'Reduce pesticides + flowers + diverse farming',effective:90,note:'Natural conditions!'},{id:'c',text:'Import bees',effective:15,note:'Brings disease.'},{id:'d',text:'Crops without pollinators',effective:25,note:'Less food variety.'}]}
-  }}
-};
-
-const dataHandler={onDataChanged(data){allRecords=data;updateHUD();renderHistory();}};
-
-async function initApp(){const r=await window.dataSdk.init(dataHandler);if(!r.isOk)console.error('SDK init failed');updateHUD();}
-
-function updateHUD(){
-  const totalXP=allRecords.reduce((s,r)=>s+(parseInt(r.xp_earned)||10),0);
-  const level=Math.floor(totalXP/100)+1;
-  document.getElementById('level-badge').textContent=level;
-  document.getElementById('xp-fill').style.width=(totalXP%100)+'%';
-  document.getElementById('xp-text').textContent=totalXP+' XP';
-  document.getElementById('star-count').textContent=allRecords.length;
-}
-
-function showXPPopup(xp){
-  const el=document.createElement('div');el.className='xp-popup text-2xl font-bold text-yellow-400';
-  el.textContent='+'+xp+' XP';document.body.appendChild(el);playSound('xp');setTimeout(()=>el.remove(),1500);
-}
-
-function showView(id){
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  const el=document.getElementById(id);el.classList.add('active');
-  el.classList.remove('fade-in');void el.offsetWidth;el.classList.add('fade-in');
-  const stepBar=document.getElementById('step-bar');
-  if(['view-worlds','view-missions','view-history','view-compass','view-level-select'].includes(id))stepBar.classList.add('hidden');
-  else{stepBar.classList.remove('hidden');renderStepDots();}
-  lucide.createIcons();
-}
-
-function renderStepDots(){
-  document.getElementById('step-dots').innerHTML=STEPS.map((s,i)=>`<div class="step-dot ${i<currentStepIdx?'completed':i===currentStepIdx?'current':'upcoming'}"></div>`).join('');
-  document.getElementById('step-label').textContent=STEP_LABELS[currentStepIdx];
-  document.getElementById('xp-preview').textContent='🏆 +10-35 XP';
-}
-
-function selectWorld(worldId){
-  playSound('click');currentWorld=worldId;const w=WORLDS[worldId];
-  document.getElementById('world-icon').textContent=w.icon;
-  document.getElementById('world-icon').style.background=w.color+'20';
-  document.getElementById('world-title-display').textContent=w.title;
-  document.getElementById('world-title-display').style.color=w.color;
-  document.getElementById('world-desc-display').textContent=w.desc;
-  document.getElementById('mission-list').innerHTML=Object.entries(w.missions).map(([id,m])=>`
-    <button class="mission-card bg-[#1a1a2e] p-4 text-left" onclick="startMission('${id}')">
-      <h4 class="font-bold text-sm" style="color:${w.color}">${m.title}</h4>
-      <p class="text-xs text-slate-400 mt-1">${m.data.length} data • ${m.quiz.length} quiz • ${m.solutions.length} solutions</p>
-      <div class="flex items-center justify-between mt-3">
-        <span class="text-xs text-slate-500">🏆 +10-35 XP</span>
-        <span class="roblox-btn text-xs px-3 py-1 bg-green-600">START</span>
-      </div>
-    </button>`).join('');
-  lucide.createIcons();showView('view-missions');
-}
-
-function startMission(id){playSound('click');currentMission=id;currentMissionData=WORLDS[currentWorld].missions[id];currentStepIdx=0;selectedSolution=null;quizPassed=false;loadStep();}
-
-function loadStep(){
-  const step=STEPS[currentStepIdx],m=currentMissionData;
-  if(step==='observe'){
-    document.getElementById('observe-title').textContent=m.title;
-    document.getElementById('observe-data').innerHTML=m.data.map((d,i)=>`<div class="bg-[#1e1e3f] border border-[#333] rounded-lg p-2.5 slide-up" style="animation-delay:${i*0.05}s"><span class="text-xs text-slate-400">${d.label}</span><p class="font-medium text-sm mt-0.5">${d.value}</p></div>`).join('');
-    document.getElementById('lumi-question').textContent=m.question;
-    document.getElementById('observe-input').value='';document.getElementById('observe-error').classList.remove('show');
-    showView('view-observe');
-  }else if(step==='learn'){
-    document.getElementById('learn-content').innerHTML=m.learn.map(t=>`<p>${t}</p>`).join('');
-    document.getElementById('lumi-learn-prompt').textContent='Understand these concepts before the simulation!';
-    document.getElementById('video-topic').textContent=m.title;
-    document.getElementById('video-placeholder').classList.remove('hidden');
-    document.getElementById('video-player').classList.add('hidden');currentSlide=0;
-    showView('view-learn');
-  }else if(step==='simulate'){renderSimulation(m);showView('view-simulate');
-  }else if(step==='quiz'){renderQuiz(m);showView('view-quiz');
-  }else if(step==='argument'){
-    document.getElementById('arg-claim').value='';
-    document.getElementById('arg-evidence').value='';
-    document.getElementById('arg-reasoning').value='';
-    document.getElementById('arg-rebuttal').value='';
-    document.getElementById('arg-feedback').classList.add('hidden');
-    document.getElementById('arg-error').classList.remove('show');
-    document.querySelectorAll('.arg-step').forEach((s,i)=>{s.classList.remove('active','done');if(i===0)s.classList.add('active');});
-    // Activate steps as user types
-    ['arg-claim','arg-evidence','arg-reasoning','arg-rebuttal'].forEach((id,i)=>{
-      const el=document.getElementById(id);
-      el.removeEventListener('input',el._stepHandler);
-      el._stepHandler=()=>{
-        const steps=document.querySelectorAll('.arg-step');
-        if(el.value.trim().length>0){steps[i].classList.add('done');steps[i].classList.remove('active');if(i<3)steps[i+1].classList.add('active');}
+      const WORLDS = {
+        water: {
+          title: "Water World",
+          desc: "Air kotor, banjir, sanitasi, mikroplastik.",
+          icon: "W",
+          color: "#22d3ee",
+          art: "linear-gradient(180deg,#38bdf8,#0f766e)",
+          missions: {
+            river: {
+              title: "The River That Changed Color",
+              question: "Kenapa air sungai berubah warna setelah hujan?",
+              data: [
+                ["Water color", "Brown near drain"],
+                ["pH", "5.8"],
+                ["Rainfall", "High"],
+                ["Smell", "Strong near outlet"],
+                ["Trash net", "Half full"],
+                ["Upstream", "Less cloudy"],
+              ],
+              learn: [
+                "Pencemaran air bisa berasal dari limbah, sedimen, atau sampah yang terbawa aliran.",
+                "Data lokasi penting: bandingkan hulu, titik dekat sumber, dan hilir.",
+                "Solusi yang kuat harus mengurangi sumber masalah dan punya cara pemantauan.",
+              ],
+              variables: [
+                ["Drain waste", 70],
+                ["Rain runoff", 65],
+                ["Plastic trash", 45],
+                ["Filter plants", 20],
+                ["Water testing", 15],
+              ],
+              quiz: [
+                ["Data mana yang paling membantu mencari sumber pencemar?", ["Warna air saja", "Perbandingan hulu-hilir", "Nama sungai", "Ukuran batu"], 1],
+                ["Air jernih selalu aman diminum?", ["Ya", "Tidak"], 1],
+              ],
+              solutions: [
+                ["a", "Cat sungai agar terlihat bersih", 18, "Hanya menutup gejala."],
+                ["b", "Audit saluran limbah + uji air rutin", 90, "Mengatasi sumber dan mengukur perubahan."],
+                ["c", "Bersihkan sampah sekali saja", 48, "Membantu sementara."],
+                ["d", "Pasang papan larangan tanpa tindak lanjut", 35, "Perlu sistem dan pemantauan."],
+              ],
+            },
+            flood: {
+              title: "Flooding After Heavy Rain",
+              question: "Mengapa banjir makin parah di sekitar sekolah?",
+              data: [
+                ["Rainfall", "250mm/6hrs"],
+                ["Drainage", "Blocked"],
+                ["Absorption", "90% concrete"],
+                ["River", "Overflowing"],
+                ["Trees", "Cut down"],
+                ["Water level", "60cm on roads"],
+              ],
+              learn: [
+                "Siklus air membutuhkan area resapan agar hujan tidak langsung menjadi limpasan.",
+                "Drainase tersumbat dan permukaan beton mempercepat banjir lokal.",
+                "Biopori, taman, dan pembersihan drainase bisa bekerja sebagai paket solusi.",
+              ],
+              variables: [
+                ["Concrete area", 90],
+                ["Drainage trash", 75],
+                ["Rainfall", 95],
+                ["Trees/Parks", 10],
+                ["Biopores", 5],
+              ],
+              quiz: [
+                ["Fungsi utama area resapan adalah...", ["Menyerap air hujan", "Tempat parkir", "Membuang sampah", "Menaikkan panas"], 0],
+                ["Biopori membantu karena...", ["Menambah beton", "Meningkatkan resapan", "Menutup drainase", "Menambah polusi"], 1],
+              ],
+              solutions: [
+                ["a", "Pompa air keluar kota", 30, "Solusi sementara."],
+                ["b", "Biopori + taman + drainase bersih", 88, "Meningkatkan resapan dan mengurangi sumbatan."],
+                ["c", "Tinggikan tembok saja", 42, "Mahal dan tidak mengatasi akar."],
+                ["d", "Pindahkan semua siswa", 12, "Tidak realistis."],
+              ],
+            },
+          },
+        },
+        air: {
+          title: "Air City",
+          desc: "Polusi udara, asap kendaraan, dan kualitas ruang kelas.",
+          icon: "A",
+          color: "#f59e0b",
+          art: "linear-gradient(180deg,#fbbf24,#78350f)",
+          missions: {
+            smoke: {
+              title: "Morning Smoke Alert",
+              question: "Sumber polusi apa yang paling kuat di pagi hari?",
+              data: [["Vehicles", "High"], ["Trash burning", "Detected"], ["Wind", "To classroom"], ["PM level", "Unsafe"], ["Trees", "Low"], ["Complaints", "Coughing"]],
+              learn: ["Polusi udara bisa berasal dari kendaraan, pembakaran, dan sirkulasi buruk.", "Arah angin membantu membaca sumber polusi.", "Solusi perlu mengurangi sumber emisi dan memantau hasil."],
+              variables: [["Vehicles", 75], ["Burning", 80], ["Heat trap", 45], ["Trees", 15], ["No-burn rule", 10]],
+              quiz: [["Apa indikator kualitas udara buruk?", ["PM tinggi", "Warna gedung", "Jumlah kursi", "Nama jalan"], 0], ["Mengapa arah angin penting?", ["Menentukan sumber asap", "Menambah suara", "Mengubah warna langit"], 0]],
+              solutions: [["a", "Zona tanpa bakar + log udara", 86, "Mengurangi sumber utama dan memantau dampak."], ["b", "Tambah poster saja", 34, "Kesadaran tanpa aksi belum cukup."], ["c", "Cat gedung warna hijau", 10, "Tidak mengurangi polusi."], ["d", "Pindah gerbang sementara", 50, "Membantu sebagian."],],
+            },
+          },
+        },
+        waste: {
+          title: "Waste Zone",
+          desc: "Plastik sekali pakai, kompos, daur ulang.",
+          icon: "S",
+          color: "#60a5fa",
+          art: "linear-gradient(180deg,#60a5fa,#1e3a8a)",
+          missions: {
+            canteen: {
+              title: "Canteen Trash Rush",
+              question: "Sampah apa yang paling banyak setelah istirahat?",
+              data: [["Plastic cups", "Very high"], ["Food scraps", "Medium"], ["Sorting bins", "Missing"], ["Refill station", "None"], ["Pickup", "Overloaded"], ["Student habit", "Disposable"]],
+              learn: ["Masalah sampah perlu dibaca dari jenis, sumber, dan sistem pengelolaan.", "Mengurangi sumber biasanya lebih kuat daripada hanya memindahkan sampah.", "Audit sampah membantu membuktikan perubahan."],
+              variables: [["Single-use plastic", 88], ["Mixed bins", 70], ["Food scraps", 45], ["Refill habit", 10], ["Compost", 15]],
+              quiz: [["Strategi 3R dimulai dari...", ["Reduce", "Rinse", "Run", "Repeat"], 0], ["Audit sampah berguna untuk...", ["Mengukur jenis dan jumlah", "Membuat sampah hilang", "Mengganti guru"], 0]],
+              solutions: [["a", "Botol isi ulang + kebijakan kantin", 88, "Mengurangi sumber sampah terbesar."], ["b", "Tambah tong tanpa label", 38, "Belum memperbaiki perilaku."], ["c", "Buang semua ke satu truk", 20, "Memindahkan masalah."], ["d", "Kompos saja", 56, "Bagus untuk organik, belum menyentuh plastik."],],
+            },
+          },
+        },
+        energy: {
+          title: "Energy Lab",
+          desc: "Hemat listrik, efisiensi, energi terbarukan.",
+          icon: "E",
+          color: "#a78bfa",
+          art: "linear-gradient(180deg,#c084fc,#581c87)",
+          missions: {
+            classroom: {
+              title: "Classroom Energy Leak",
+              question: "Kebiasaan apa yang paling memboroskan energi?",
+              data: [["Lights", "On at noon"], ["Empty rooms", "Still powered"], ["Ventilation", "Poor"], ["Meter spike", "Daytime"], ["Solar", "None"], ["Fans", "High use"]],
+              learn: ["Efisiensi dimulai dari mengurangi pemakaian tidak perlu.", "Teknologi baru efektif jika kebiasaan dasar sudah baik.", "Data meter membantu melihat perubahan nyata."],
+              variables: [["Lights waste", 78], ["Cooling load", 60], ["Old devices", 52], ["LED use", 20], ["Energy patrol", 10]],
+              quiz: [["Langkah hemat energi paling awal adalah...", ["Kurangi pemborosan", "Beli alat mahal dulu", "Tambah lampu"], 0], ["Meter listrik membantu karena...", ["Mencatat perubahan", "Membuat listrik gratis", "Mengganti panel"], 0]],
+              solutions: [["a", "LED + patroli hemat energi", 84, "Mengurangi pemakaian dan menjaga kebiasaan."], ["b", "Panel surya tanpa efisiensi", 58, "Membantu, tetapi konsumsi masih bocor."], ["c", "Matikan semua listrik saat belajar", 22, "Tidak realistis."], ["d", "Poster hemat energi saja", 35, "Perlu rutinitas dan data."],],
+            },
+          },
+        },
+        climate: {
+          title: "Climate Dome",
+          desc: "Panas kota, banjir, adaptasi iklim.",
+          icon: "C",
+          color: "#fb7185",
+          art: "linear-gradient(180deg,#fb7185,#7f1d1d)",
+          missions: {
+            heat: {
+              title: "Hot Schoolyard Mystery",
+              question: "Kenapa halaman sekolah makin panas dan mudah tergenang?",
+              data: [["Concrete", "Very wide"], ["Shade", "Low"], ["Temperature", "39C"], ["Puddles", "Frequent"], ["Drain", "Partial"], ["Rain tank", "None"]],
+              learn: ["Adaptasi iklim melihat panas dan air sebagai sistem.", "Permukaan keras mempercepat limpasan dan menyimpan panas.", "Solusi terbaik punya manfaat ganda."],
+              variables: [["Concrete", 88], ["Heat", 78], ["Fast runoff", 70], ["Trees", 15], ["Rain garden", 8]],
+              quiz: [["Permukaan beton memperparah...", ["Panas dan limpasan", "Jumlah buku", "Warna tanaman"], 0], ["Solusi manfaat ganda contohnya...", ["Taman resapan", "Poster saja", "Lampu lebih terang"], 0]],
+              solutions: [["a", "Zona resapan + koridor pohon", 88, "Menurunkan panas dan membantu air meresap."], ["b", "Tambah AC di kelas", 42, "Mengurangi gejala di dalam, bukan halaman."], ["c", "Cat lapangan saja", 38, "Dampaknya terbatas."], ["d", "Tutup semua halaman", 20, "Tidak realistis."],],
+            },
+          },
+        },
+        food: {
+          title: "Food & Health Hub",
+          desc: "Gizi, kebersihan, keamanan makanan.",
+          icon: "F",
+          color: "#4ade80",
+          art: "linear-gradient(180deg,#4ade80,#14532d)",
+          missions: {
+            hygiene: {
+              title: "Canteen Health Check",
+              question: "Risiko kesehatan terbesar ada di mana?",
+              data: [["Handwash", "Low"], ["Food cover", "Often open"], ["Sugary snacks", "High"], ["Queue", "Crowded"], ["Complaints", "After lunch"], ["Local menu", "Limited"]],
+              learn: ["Keamanan pangan bukan hanya menu, tetapi juga kebersihan dan cara penyajian.", "Data keluhan perlu dibandingkan dengan pola makan.", "Solusi harus realistis untuk kantin dan siswa."],
+              variables: [["Poor hygiene", 78], ["Open food", 72], ["Sugary snacks", 60], ["Handwash routine", 10], ["Safe serving", 18]],
+              quiz: [["Keamanan pangan dipengaruhi oleh...", ["Kebersihan dan penyajian", "Warna meja saja", "Ukuran kelas"], 0], ["Mengapa cuci tangan penting?", ["Mengurangi risiko kuman", "Menaikkan harga makanan", "Mengurangi buku"], 0]],
+              solutions: [["a", "Rutinitas cuci tangan + checklist saji", 89, "Mengatasi risiko proses yang paling cepat."], ["b", "Tambah menu manis", 15, "Memperburuk pola makan."], ["c", "Ganti warna kantin", 12, "Tidak menyentuh akar."], ["d", "Label menu saja", 55, "Membantu pilihan, belum cukup untuk kebersihan."],],
+            },
+          },
+        },
+        biodiversity: {
+          title: "Biodiversity Forest",
+          desc: "Habitat, penyerbuk, konservasi lokal.",
+          icon: "B",
+          color: "#f472b6",
+          art: "linear-gradient(180deg,#f472b6,#831843)",
+          missions: {
+            pollinator: {
+              title: "Where Did the Pollinators Go?",
+              question: "Faktor apa yang paling menekan penyerbuk di sekolah?",
+              data: [["Pesticide", "Recently increased"], ["Native plants", "Low"], ["Pollinators", "Rare"], ["Habitat corner", "Removed"], ["Flower count", "Medium"], ["Observation", "Drop after spraying"]],
+              learn: ["Biodiversitas lokal bergantung pada makanan, habitat, dan lingkungan aman.", "Pestisida bisa menekan serangga penyerbuk.", "Pengamatan mingguan membantu membuktikan pemulihan."],
+              variables: [["Pesticide", 82], ["Habitat loss", 65], ["Few native plants", 55], ["Native garden", 15], ["Pollinator count", 10]],
+              quiz: [["Penyerbuk membutuhkan...", ["Makanan, habitat, aman", "Beton luas", "Lampu terang"], 0], ["Monitoring biodiversitas bisa dilakukan dengan...", ["Hitung penyerbuk rutin", "Menebak dari jauh", "Melarang semua tanaman"], 0]],
+              solutions: [["a", "Kurangi pestisida + taman tanaman asli", 88, "Mengurangi tekanan dan menyediakan makanan."], ["b", "Semprot lebih sering", 8, "Makin menekan penyerbuk."], ["c", "Tanaman plastik", 5, "Tidak memberi makanan/habitat."], ["d", "Hitung penyerbuk saja", 54, "Bagus untuk data, perlu aksi pemulihan."],],
+            },
+          },
+        },
       };
-      el.addEventListener('input',el._stepHandler);
-    });
-    showView('view-argument');
-  }else if(step==='solution'){renderSolutions(m);showView('view-solution');
-  }else if(step==='verify'){renderVerification(m);showView('view-verify');
-  }else if(step==='reflect'){
-    document.getElementById('reflect-success').classList.add('hidden');
-    document.getElementById('reflect-error').classList.add('hidden');
-    document.getElementById('name-error').classList.remove('show');
-    document.getElementById('notes-error').classList.remove('show');
-    showView('view-reflect');
-  }
-}
 
-function tryNextStep(fromStep){
-  if(fromStep==='observe'){const val=document.getElementById('observe-input').value.trim();if(!val){document.getElementById('observe-error').classList.add('show');playSound('wrong');return;}document.getElementById('observe-error').classList.remove('show');}
-  if(fromStep==='solution'){if(!selectedSolution){document.getElementById('solution-error').classList.add('show');playSound('wrong');return;}document.getElementById('solution-error').classList.remove('show');}
-  if(fromStep==='quiz'){if(!quizPassed){document.getElementById('quiz-error').classList.add('show');playSound('wrong');return;}}
-  if(fromStep==='argument'){
-    const claim=document.getElementById('arg-claim').value.trim();
-    const evidence=document.getElementById('arg-evidence').value.trim();
-    if(!claim||!evidence){document.getElementById('arg-error').classList.add('show');playSound('wrong');return;}
-    document.getElementById('arg-error').classList.remove('show');
-  }
-  playSound('click');if(currentStepIdx<STEPS.length-1){currentStepIdx++;loadStep();}
-}
+      let level = null;
+      let currentWorld = null;
+      let currentMissionId = null;
+      let currentMission = null;
+      let stepIndex = 0;
+      let selectedSolution = null;
+      let quizPassed = false;
+      let currentSlide = 0;
+      let quizAnswers = {};
+      let records = readRecords();
+      let audioCtx = null;
 
-document.getElementById('back-btn').addEventListener('click',()=>{if(currentStepIdx>0){currentStepIdx--;loadStep();}else showView('view-missions');});
+      const $ = (id) => document.getElementById(id);
 
-function playVideo(){document.getElementById('video-placeholder').classList.add('hidden');document.getElementById('video-player').classList.remove('hidden');currentSlide=0;renderSlide();}
-function renderSlide(){const slides=currentMissionData.learn;document.getElementById('video-narration').innerHTML=slides[currentSlide]||'';document.getElementById('slide-dots').innerHTML=slides.map((_,i)=>`<div class="w-2 h-2 rounded-full ${i===currentSlide?'bg-cyan-400':'bg-slate-600'}"></div>`).join('');lucide.createIcons();}
-function nextSlide(){if(currentSlide<currentMissionData.learn.length-1){currentSlide++;renderSlide();}}
-function prevSlide(){if(currentSlide>0){currentSlide--;renderSlide();}}
+      function readRecords() {
+        try {
+          return JSON.parse(localStorage.getItem(STORE_KEY) || "[]");
+        } catch (_) {
+          return [];
+        }
+      }
 
-function renderSimulation(m){
-  document.getElementById('sim-controls').innerHTML=m.variables.map((v,i)=>`<div><div class="flex justify-between text-xs mb-1"><span>${v.name}</span><span id="sv${i}" class="font-bold text-emerald-400">${v.default}%</span></div><input type="range" min="${v.min}" max="${v.max}" value="${v.default}" class="slider-track w-full" oninput="updateSim(${i},this.value)"></div>`).join('');
-  updateSimResult();renderParticles();
-}
-function renderParticles(){
-  const c=document.getElementById('phet-particles');c.innerHTML='';
-  for(let i=0;i<12;i++){const p=document.createElement('div');p.className='phet-particle';p.style.width=p.style.height=(6+Math.random()*10)+'px';p.style.left=Math.random()*90+'%';p.style.top=Math.random()*80+'%';p.style.background=`hsl(${Math.random()*60+10},80%,50%)`;p.style.opacity='0.7';p.id='particle-'+i;c.appendChild(p);}
-}
-function updateSim(i,val){document.getElementById('sv'+i).textContent=val+'%';updateSimResult();}
-function updateSimResult(){
-  const sliders=document.querySelectorAll('#sim-controls input[type=range]');
-  let pollution=0,mitigation=0;
-  sliders.forEach((s,i)=>{const v=parseInt(s.value);if(i<=2)pollution+=v;else mitigation+=v;});
-  const score=Math.max(0,Math.min(100,Math.round(50-pollution/6+mitigation/2)));
-  const color=score>60?'#10b981':score>35?'#f59e0b':'#ef4444';
-  document.getElementById('phet-score-display').textContent=score+'%';
-  document.getElementById('phet-score-display').style.color=color;
-  document.getElementById('phet-bar').style.width=score+'%';
-  document.getElementById('phet-bar').style.background=color;
-  document.querySelectorAll('.phet-particle').forEach(p=>{const b=(100-score)/100;p.style.opacity=0.3+b*0.7;p.style.transform=`scale(${0.5+b*1.5})`;p.style.background=color;});
-}
+      function writeRecords() {
+        localStorage.setItem(STORE_KEY, JSON.stringify(records));
+      }
 
-function renderQuiz(m){
-  quizPassed=false;document.getElementById('quiz-error').classList.remove('show');
-  document.getElementById('quiz-submit-btn').classList.remove('hidden');
-  document.getElementById('quiz-next-btn').classList.add('hidden');
-  document.getElementById('quiz-container').innerHTML=m.quiz.map((q,qi)=>`
-    <div class="game-panel p-4 slide-up" style="animation-delay:${qi*0.1}s">
-      <p class="text-sm font-bold mb-3">${qi+1}. ${q.q}</p>
-      <div class="space-y-2">${q.options.map((o,oi)=>`<button onclick="selectQuizOption(${qi},${oi})" id="qo-${qi}-${oi}" class="quiz-option w-full text-left text-sm">${o}</button>`).join('')}</div>
-    </div>`).join('');
-}
-const quizAnswers={};
-function selectQuizOption(qi,oi){playSound('click');quizAnswers[qi]=oi;document.querySelectorAll(`[id^="qo-${qi}-"]`).forEach(o=>{o.classList.remove('selected','correct','wrong');});document.getElementById(`qo-${qi}-${oi}`).classList.add('selected');}
-function submitQuiz(){
-  const m=currentMissionData;let allCorrect=true;
-  m.quiz.forEach((q,qi)=>{document.querySelectorAll(`[id^="qo-${qi}-"]`).forEach(o=>o.classList.remove('correct','wrong','selected'));if(quizAnswers[qi]===undefined){allCorrect=false;return;}if(quizAnswers[qi]===q.correct){document.getElementById(`qo-${qi}-${q.correct}`).classList.add('correct');}else{allCorrect=false;document.getElementById(`qo-${qi}-${quizAnswers[qi]}`).classList.add('wrong');document.getElementById(`qo-${qi}-${q.correct}`).classList.add('correct');}});
-  if(allCorrect){quizPassed=true;playSound('success');document.getElementById('quiz-error').classList.remove('show');document.getElementById('quiz-lumi-msg').textContent='🎉 All correct! You\'re ready to build your argument!';document.getElementById('quiz-submit-btn').classList.add('hidden');document.getElementById('quiz-next-btn').classList.remove('hidden');}
-  else{playSound('wrong');document.getElementById('quiz-error').classList.add('show');document.getElementById('quiz-lumi-msg').textContent='Try again! Check the wrong answers 🔄';}
-}
+      function playSound(type) {
+        try {
+          audioCtx ||= new (window.AudioContext || window.webkitAudioContext)();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type = "square";
+          osc.frequency.value = type === "wrong" ? 165 : type === "success" ? 660 : type === "xp" ? 880 : 420;
+          gain.gain.value = 0.08;
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.16);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.16);
+        } catch (_) {}
+      }
 
-function lumiCheckArgument(){
-  const claim=document.getElementById('arg-claim').value.trim();
-  const evidence=document.getElementById('arg-evidence').value.trim();
-  const reasoning=document.getElementById('arg-reasoning').value.trim();
-  const rebuttal=document.getElementById('arg-rebuttal').value.trim();
-  let feedback='';
-  if(!claim)feedback='You need a claim first! What do you think is the main cause?';
-  else if(!evidence)feedback='Good claim! Now add evidence from the data to support it.';
-  else if(!reasoning)feedback='Nice evidence! Can you explain WHY this evidence supports your claim?';
-  else if(!rebuttal)feedback='Strong argument so far! Consider: could there be an alternative explanation? Why is yours stronger?';
-  else feedback='Excellent argument! 🎉 You have a claim backed by evidence, clear reasoning, and you\'ve considered alternatives. You\'re ready to propose a solution!';
-  document.getElementById('arg-feedback').classList.remove('hidden');
-  document.getElementById('arg-feedback-text').textContent=feedback;
-  playSound('success');
-}
+      function init() {
+        renderStars();
+        renderLevels();
+        renderWorlds();
+        updateHud();
+        bindEvents();
+      }
 
-function renderSolutions(m){
-  selectedSolution=null;document.getElementById('solution-error').classList.remove('show');
-  document.getElementById('solution-options').innerHTML=m.solutions.map(s=>`<button onclick="selectSolution('${s.id}')" id="sol-${s.id}" class="w-full text-left p-3 rounded-xl border-2 border-[#333] bg-[#1a1a2e] hover:border-emerald-500 transition text-sm">${s.text}</button>`).join('');
-}
-function selectSolution(id){
-  playSound('click');selectedSolution=id;document.getElementById('solution-error').classList.remove('show');
-  document.querySelectorAll('#solution-options button').forEach(b=>{b.classList.remove('border-emerald-500','bg-emerald-900/30');b.classList.add('border-[#333]');});
-  document.getElementById('sol-'+id).classList.add('border-emerald-500','bg-emerald-900/30');document.getElementById('sol-'+id).classList.remove('border-[#333]');
-}
+      function renderStars() {
+        const root = $("starfield");
+        root.innerHTML = "";
+        for (let i = 0; i < 80; i += 1) {
+          const s = document.createElement("div");
+          s.className = "star";
+          s.style.left = `${Math.random() * 100}%`;
+          s.style.top = `${Math.random() * 100}%`;
+          s.style.animationDuration = `${Math.random() * 3 + 2}s`;
+          s.style.animationDelay = `${Math.random() * 3}s`;
+          root.appendChild(s);
+        }
+      }
 
-function renderVerification(m){
-  const sol=m.solutions.find(s=>s.id===selectedSolution);if(!sol)return;
-  const pct=sol.effective,color=pct>=80?'#10b981':pct>=50?'#f59e0b':'#ef4444';
-  const verdict=pct>=80?'✓ EXCELLENT! Root cause addressed!':pct>=50?'⚠ Partially helpful':'✗ Not very effective';
-  document.getElementById('verify-content').innerHTML=`<p><b>Your solution:</b> ${sol.text}</p><div class="flex items-center gap-3 mt-3"><span class="text-xs text-slate-400">Effectiveness:</span><div class="flex-1 h-6 bg-[#1e1e3f] border border-[#333] rounded-full overflow-hidden"><div class="h-full rounded-full transition-all duration-500" style="width:${pct}%;background:${color}"></div></div><span class="font-bold" style="color:${color}">${pct}%</span></div><p class="mt-3 font-bold text-lg" style="color:${color}">${verdict}</p><p class="mt-2 text-slate-300">${sol.note}</p>`;
-}
+      function renderLevels() {
+        $("level-grid").innerHTML = LEVELS.map(
+          (item) => `
+          <button class="level-option" type="button" data-level="${item.id}">
+            <div class="level-symbol">${item.icon}</div>
+            <h3>${item.title}</h3>
+            <p>${item.desc}</p>
+          </button>`
+        ).join("");
+      }
 
-document.getElementById('reflect-form').addEventListener('submit',async(e)=>{
-  e.preventDefault();
-  const name=document.getElementById('reflect-name').value.trim(),notes=document.getElementById('reflect-notes').value.trim();
-  let valid=true;
-  if(!name){document.getElementById('name-error').classList.add('show');valid=false;}else document.getElementById('name-error').classList.remove('show');
-  if(!notes||notes.length<10){document.getElementById('notes-error').classList.add('show');valid=false;}else document.getElementById('notes-error').classList.remove('show');
-  if(!valid){playSound('wrong');return;}
-  if(allRecords.length>=999){document.getElementById('reflect-error').textContent='⚠️ Limit of 999 records reached! Delete some old records.';document.getElementById('reflect-error').classList.remove('hidden');return;}
-  const btn=e.target.querySelector('button[type=submit]');btn.disabled=true;btn.style.opacity='0.5';
-  const sol=currentMissionData.solutions.find(s=>s.id===selectedSolution);
-  const xp=10+(sol&&sol.effective>=80?15:sol&&sol.effective>=50?8:0)+(notes.length>30?10:0);
-  const argData=[document.getElementById('arg-claim').value.trim(),document.getElementById('arg-evidence').value.trim(),document.getElementById('arg-reasoning').value.trim(),document.getElementById('arg-rebuttal').value.trim()].filter(Boolean).join(' | ');
-  const result=await window.dataSdk.create({student_name:name,difficulty_level:difficultyLevel||'teen',mission_id:currentMission,world_id:currentWorld,current_step:'completed',observations_noted:document.getElementById('observe-input')?.value||'',variables_tested:Array.from(document.querySelectorAll('#sim-controls input[type=range]')).map(s=>s.value).join(','),solution_chosen:sol?sol.text:'',verification_result:sol?sol.effective+'%':'',reflection_notes:notes,quiz_score:currentMissionData.quiz.length,completed_at:new Date().toISOString(),xp_earned:xp,skill_scores:argData,streak_days:0});
-  btn.disabled=false;btn.style.opacity='1';
-  if(result.isOk){document.getElementById('reflect-success').classList.remove('hidden');document.getElementById('reflect-error').classList.add('hidden');showXPPopup(xp);playSound('success');}
-  else{document.getElementById('reflect-error').textContent='Failed to save. Try again.';document.getElementById('reflect-error').classList.remove('hidden');}
-});
+      function renderWorlds() {
+        $("world-grid").innerHTML = Object.entries(WORLDS).map(([id, world]) => {
+          const count = Object.keys(world.missions).length;
+          return `
+            <button class="world-card" type="button" data-world="${id}">
+              <div class="world-art" style="--art:${world.art}">
+                <span class="scene-shape shape-a"></span>
+                <span class="scene-shape shape-b"></span>
+                <span class="scene-shape shape-c"></span>
+              </div>
+              <div class="world-body">
+                <h3 style="color:${world.color}">${world.title}</h3>
+                <p>${world.desc}</p>
+                <div class="tag-row">
+                  <span class="tag">${count} Missions</span>
+                  <span class="play-chip">PLAY</span>
+                </div>
+              </div>
+            </button>`;
+        }).join("");
+      }
 
-const LUMI_GUIDES={observe:{guide:'Look for data showing the main problem signs. Which numbers are abnormal?',simplify:'Focus: current state vs ideal state.'},learn:{guide:'These concepts explain the "why" behind the data.',simplify:'Connect concepts to your observation data.'},simulate:{guide:'Change one variable at a time. Observe the result carefully.',simplify:'Move one slider. Watch the change.'},argument:{guide:'A strong argument needs: Claim + Evidence + Reasoning.',simplify:'What happened? What proves it? Why?'},solution:{guide:'Does it treat the symptom or the root cause?',simplify:'Symptom = sign. Root = cause.'},verify:{guide:'>80% = root cause addressed. Below? Rethink!',simplify:'High score = awesome!'}};
-function lumiGuide(step){showLumiMessage(LUMI_GUIDES[step]?.guide||'Keep going!');}
-function lumiSimplify(step){showLumiMessage(LUMI_GUIDES[step]?.simplify||'You can do it!');}
-function showLumiMessage(msg){
-  const modal=document.createElement('div');modal.className='fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4';
-  modal.innerHTML=`<div class="game-panel p-6 max-w-md w-full fade-in"><div class="flex items-start gap-3 mb-4"><img data-template-id="lumi-avatar-observe" class="canva-image lumi-avatar excited w-14 h-14 rounded-2xl" loading="lazy"><div><p class="font-bold text-emerald-400">LUMI</p><p class="text-xs text-slate-400">AI Science Buddy</p></div></div><p class="text-sm leading-relaxed text-slate-300 mb-4">${msg}</p><button onclick="this.closest('.fixed').remove()" class="roblox-btn w-full px-4 py-2.5 bg-emerald-600 text-sm">Got it! 👍</button></div>`;
-  document.body.appendChild(modal);
-}
+      function bindEvents() {
+        document.addEventListener("click", (event) => {
+          const levelBtn = event.target.closest("[data-level]");
+          if (levelBtn) selectLevel(levelBtn.dataset.level);
 
-document.getElementById('history-btn').addEventListener('click',()=>showView('view-history'));
-document.getElementById('compass-btn').addEventListener('click',()=>{renderCompass();showView('view-compass');});
+          const worldBtn = event.target.closest("[data-world]");
+          if (worldBtn) selectWorld(worldBtn.dataset.world);
 
-function renderHistory(){
-  const list=document.getElementById('history-list'),empty=document.getElementById('history-empty');
-  if(!allRecords.length){empty.classList.remove('hidden');list.innerHTML='';return;}
-  empty.classList.add('hidden');
-  list.innerHTML=allRecords.slice().reverse().slice(0,20).map(r=>{
-    const w=WORLDS[r.world_id],mTitle=w?.missions?.[r.mission_id]?.title||r.mission_id;
-    const date=r.completed_at?new Date(r.completed_at).toLocaleDateString('id-ID'):'';
-    return`<div class="game-panel p-3 text-sm"><div class="flex justify-between items-center"><span class="font-bold" style="color:${w?.color||'#10b981'}">${mTitle}</span><span class="text-xs font-bold text-yellow-400">+${r.xp_earned||10} XP</span></div><p class="text-xs text-slate-400 mt-1">${r.student_name} • ${date}</p></div>`;
-  }).join('');
-}
+          const missionBtn = event.target.closest("[data-mission]");
+          if (missionBtn) startMission(missionBtn.dataset.mission);
 
-function renderCompass(){
-  const scores={observation:0,data_reading:0,concept:0,argument:0,solution:0,verification:0,reflection:0};
-  allRecords.forEach(r=>{scores.observation+=5;scores.data_reading+=5;scores.concept+=5;scores.argument+=(r.skill_scores&&r.skill_scores.length>20)?15:r.skill_scores?8:3;const v=parseInt(r.verification_result)||0;scores.solution+=v>=80?20:v>=50?12:5;scores.verification+=v>=80?20:v>=50?12:5;scores.reflection+=(r.reflection_notes&&r.reflection_notes.length>50)?15:r.reflection_notes?8:0;});
-  Object.keys(scores).forEach(k=>scores[k]=Math.min(100,scores[k]));
-  const totalXP=allRecords.reduce((s,r)=>s+(parseInt(r.xp_earned)||10),0);
-  document.getElementById('compass-stats').innerHTML=[{label:'Total XP',value:totalXP,icon:'zap'},{label:'Missions',value:allRecords.length,icon:'target'},{label:'Observation',value:scores.observation,icon:'eye'},{label:'Data',value:scores.data_reading,icon:'bar-chart-2'},{label:'Arguments',value:scores.argument,icon:'message-circle'},{label:'Solutions',value:scores.solution,icon:'lightbulb'}].map(s=>`<div class="game-panel p-3 text-center"><div class="flex justify-center mb-1"><i data-lucide="${s.icon}" style="width:20px;height:20px;color:#10b981"></i></div><p class="text-xs text-slate-400">${s.label}</p><p class="text-lg font-bold text-emerald-400">${s.value}</p></div>`).join('');
-  const skillOrder=['observation','data_reading','concept','argument','solution','verification','reflection'];
-  const angleStep=(Math.PI*2)/7,cx=100,cy=100,maxR=70;
-  const points=skillOrder.map((sk,i)=>{const angle=i*angleStep-Math.PI/2,r=(Math.max(5,scores[sk])/100)*maxR;return`${cx+r*Math.cos(angle)},${cy+r*Math.sin(angle)}`;});
-  document.getElementById('skill-polygon').setAttribute('points',points.join(' '));
-  document.getElementById('compass-insights').innerHTML=[scores.solution>=70?'✓ <b>Great Solution Builder!</b>':'⚠ <b>Practice distinguishing symptoms from root causes.</b>',scores.argument>=60?'✓ <b>Strong Arguer!</b>':'⚠ <b>Build stronger arguments with evidence and reasoning.</b>',scores.reflection>=60?'✓ <b>Deep Reflector</b>':'⚠ <b>Write more detailed reflections.</b>'].map(t=>`<p class="text-sm text-slate-300">${t}</p>`).join('');
-  lucide.createIcons();
-}
+          const gotoBtn = event.target.closest("[data-goto]");
+          if (gotoBtn) showView(gotoBtn.dataset.goto);
 
-function toggleChat(){document.getElementById('chat-panel').classList.toggle('open');}
-const CHAT_REPLIES={'Study tips':'💡 Focus on one variable in the simulation. Observe first, then conclude! Also try building strong arguments with evidence.','What is XP?':'⭐ XP = Experience Points. Collect them from missions to level up! You earn more XP for good solutions and detailed reflections.','Best mission?':'🎯 Start with Water World — the concepts are easiest to grasp! Try "The River That Changed Color" first.','About LUMI':'🌱 LUMI Science Explorer helps you learn science through real-world sustainability problems. Observe → Learn → Simulate → Quiz → Argue → Solve → Verify → Reflect!','SDGs?':'🌍 The 17 Sustainable Development Goals are the UN\'s plan for a better world by 2030. LUMI missions are aligned with SDGs like Clean Water (6), Clean Energy (7), Climate Action (13), and Life on Land (15)!'};
-function chatReply(q){
-  const msgs=document.getElementById('chat-msgs');
-  msgs.innerHTML+=`<div class="chat-msg" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);align-self:flex-end;font-size:.8rem">${q}</div>`;
-  setTimeout(()=>{msgs.innerHTML+=`<div class="chat-msg lumi">${CHAT_REPLIES[q]||'I\'m still learning! Try asking about study tips, XP, or SDGs! 🌱'}</div>`;msgs.scrollTop=msgs.scrollHeight;},500);
-  msgs.scrollTop=msgs.scrollHeight;
-}
+          const nextBtn = event.target.closest("[data-next]");
+          if (nextBtn) nextStep(nextBtn.dataset.next);
 
-initApp();
-lucide.createIcons();
-  </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9fa1b1b1c458ce7f',t:'MTc3ODUwNzg2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+          const quizBtn = event.target.closest("[data-q]");
+          if (quizBtn) selectQuizOption(Number(quizBtn.dataset.q), Number(quizBtn.dataset.a));
+
+          const solutionBtn = event.target.closest("[data-solution]");
+          if (solutionBtn) chooseSolution(solutionBtn.dataset.solution);
+
+          const helpBtn = event.target.closest("[data-help]");
+          if (helpBtn) lumiPopup(helpFor(helpBtn.dataset.help, false));
+
+          const simpleBtn = event.target.closest("[data-simple]");
+          if (simpleBtn) lumiPopup(helpFor(simpleBtn.dataset.simple, true));
+
+          const chatBtn = event.target.closest("[data-chat]");
+          if (chatBtn) chatReply(chatBtn.dataset.chat);
+        });
+
+        $("back-btn").addEventListener("click", () => {
+          if (stepIndex > 0) {
+            stepIndex -= 1;
+            loadStep();
+          } else {
+            showView("view-missions");
+          }
+        });
+        $("history-btn").addEventListener("click", () => {
+          renderHistory();
+          showView("view-history");
+        });
+        $("compass-btn").addEventListener("click", () => {
+          renderCompass();
+          showView("view-compass");
+        });
+        $("play-video").addEventListener("click", playVideo);
+        $("next-slide").addEventListener("click", () => moveSlide(1));
+        $("prev-slide").addEventListener("click", () => moveSlide(-1));
+        $("quiz-submit").addEventListener("click", submitQuiz);
+        $("check-argument").addEventListener("click", checkArgument);
+        $("reflect-form").addEventListener("submit", submitReflection);
+        $("chat-toggle").addEventListener("click", () => $("chat-panel").classList.toggle("open"));
+      }
+
+      function selectLevel(nextLevel) {
+        level = nextLevel;
+        playSound("click");
+        document.querySelectorAll(".level-option").forEach((btn) => btn.classList.toggle("selected", btn.dataset.level === nextLevel));
+        setTimeout(() => {
+          $("hud").classList.remove("hidden");
+          showView("view-worlds");
+        }, 180);
+      }
+
+      function selectWorld(worldId) {
+        currentWorld = worldId;
+        const world = WORLDS[worldId];
+        playSound("click");
+        $("world-icon").textContent = world.icon;
+        $("world-icon").style.background = `${world.color}22`;
+        $("world-icon").style.color = world.color;
+        $("world-title-display").textContent = world.title;
+        $("world-title-display").style.color = world.color;
+        $("world-desc-display").textContent = world.desc;
+        $("mission-list").innerHTML = Object.entries(world.missions).map(([id, mission]) => `
+          <button class="mission-card" type="button" data-mission="${id}">
+            <h4 style="color:${world.color}">${mission.title}</h4>
+            <p>${mission.data.length} data • ${mission.quiz.length} quiz • ${mission.solutions.length} solutions</p>
+            <div class="tag-row">
+              <span class="tag">+10-35 XP</span>
+              <span class="play-chip">START</span>
+            </div>
+          </button>
+        `).join("");
+        showView("view-missions");
+      }
+
+      function startMission(missionId) {
+        playSound("click");
+        currentMissionId = missionId;
+        currentMission = WORLDS[currentWorld].missions[missionId];
+        stepIndex = 0;
+        selectedSolution = null;
+        quizPassed = false;
+        quizAnswers = {};
+        loadStep();
+      }
+
+      function showView(id) {
+        document.querySelectorAll(".view").forEach((view) => view.classList.remove("active"));
+        $(id).classList.add("active");
+        const isMissionStep = id.startsWith("view-") && !["view-level", "view-worlds", "view-missions", "view-history", "view-compass"].includes(id);
+        $("stepbar").classList.toggle("hidden", !isMissionStep);
+        if (isMissionStep) renderStepDots();
+      }
+
+      function renderStepDots() {
+        $("step-label").textContent = STEP_LABELS[stepIndex] || "";
+        $("step-dots").innerHTML = STEPS.map((_, index) => `<div class="step-dot ${index < stepIndex ? "done" : index === stepIndex ? "current" : ""}"></div>`).join("");
+      }
+
+      function loadStep() {
+        const step = STEPS[stepIndex];
+        if (step === "observe") loadObserve();
+        if (step === "learn") loadLearn();
+        if (step === "simulate") loadSimulate();
+        if (step === "quiz") loadQuiz();
+        if (step === "argument") loadArgument();
+        if (step === "solution") loadSolution();
+        if (step === "verify") loadVerify();
+        if (step === "reflect") loadReflect();
+      }
+
+      function loadObserve() {
+        $("observe-title").textContent = currentMission.title;
+        $("observe-data").innerHTML = currentMission.data.map(([label, value]) => `<div class="data-tile"><span>${label}</span><strong>${value}</strong></div>`).join("");
+        $("lumi-question").textContent = currentMission.question;
+        $("observe-input").value = "";
+        hideError("observe-error");
+        showView("view-observe");
+      }
+
+      function loadLearn() {
+        $("video-topic").textContent = currentMission.title;
+        $("video-placeholder").style.display = "block";
+        $("play-video").style.display = "grid";
+        $("video-player").classList.remove("active");
+        currentSlide = 0;
+        $("learn-content").innerHTML = currentMission.learn.map((item) => `<div class="concept-tile">${item}</div>`).join("");
+        showView("view-learn");
+      }
+
+      function playVideo() {
+        $("video-placeholder").style.display = "none";
+        $("play-video").style.display = "none";
+        $("video-player").classList.add("active");
+        renderSlide();
+      }
+
+      function renderSlide() {
+        $("video-narration").textContent = currentMission.learn[currentSlide] || "";
+        $("slide-dots").innerHTML = currentMission.learn.map((_, index) => `<span class="slide-dot ${index === currentSlide ? "active" : ""}"></span>`).join("");
+      }
+
+      function moveSlide(delta) {
+        currentSlide = Math.max(0, Math.min(currentMission.learn.length - 1, currentSlide + delta));
+        renderSlide();
+      }
+
+      function loadSimulate() {
+        $("sim-controls").innerHTML = currentMission.variables.map(([label, value], index) => `
+          <div class="slider-control">
+            <div class="slider-label"><span>${label}</span><strong id="slider-value-${index}">${value}%</strong></div>
+            <input class="slider" type="range" min="0" max="100" value="${value}" data-slider="${index}">
+          </div>
+        `).join("");
+        document.querySelectorAll("[data-slider]").forEach((slider) => slider.addEventListener("input", updateSimulation));
+        renderParticles();
+        updateSimulation();
+        showView("view-simulate");
+      }
+
+      function renderParticles() {
+        $("particles").innerHTML = "";
+        for (let i = 0; i < 18; i += 1) {
+          const p = document.createElement("span");
+          p.className = "particle";
+          const size = 6 + Math.random() * 12;
+          p.style.width = `${size}px`;
+          p.style.height = `${size}px`;
+          p.style.left = `${Math.random() * 92}%`;
+          p.style.top = `${Math.random() * 82}%`;
+          $("particles").appendChild(p);
+        }
+      }
+
+      function updateSimulation() {
+        const sliders = Array.from(document.querySelectorAll("[data-slider]"));
+        let pressure = 0;
+        let mitigation = 0;
+        sliders.forEach((slider, index) => {
+          const value = Number(slider.value);
+          $(`slider-value-${index}`).textContent = `${value}%`;
+          if (index <= 2) pressure += value;
+          else mitigation += value;
+        });
+        const score = Math.max(0, Math.min(100, Math.round(52 - pressure / 6 + mitigation / 2)));
+        const color = score >= 70 ? "#10b981" : score >= 42 ? "#f59e0b" : "#ef4444";
+        $("sim-score").textContent = `${score}%`;
+        $("sim-score").style.color = color;
+        $("sim-bar").style.width = `${score}%`;
+        $("sim-bar").style.background = color;
+        document.querySelectorAll(".particle").forEach((p) => {
+          const stress = (100 - score) / 100;
+          p.style.opacity = String(0.25 + stress * 0.75);
+          p.style.transform = `scale(${0.7 + stress * 1.25})`;
+          p.style.background = color;
+        });
+      }
+
+      function loadQuiz() {
+        quizPassed = false;
+        quizAnswers = {};
+        hideError("quiz-error");
+        $("quiz-submit").style.display = "inline-block";
+        $("quiz-next").style.display = "none";
+        $("quiz-lumi-msg").textContent = "Jawab semua pertanyaan dengan benar untuk lanjut.";
+        $("quiz-container").innerHTML = currentMission.quiz.map(([q, options], qIndex) => `
+          <div class="game-panel">
+            <p style="font-weight:900;margin-top:0;">${qIndex + 1}. ${q}</p>
+            <div style="display:grid;gap:8px;">
+              ${options.map((option, aIndex) => `<button class="quiz-option" type="button" id="q-${qIndex}-${aIndex}" data-q="${qIndex}" data-a="${aIndex}">${option}</button>`).join("")}
+            </div>
+          </div>
+        `).join("");
+        showView("view-quiz");
+      }
+
+      function selectQuizOption(qIndex, aIndex) {
+        playSound("click");
+        quizAnswers[qIndex] = aIndex;
+        document.querySelectorAll(`[id^="q-${qIndex}-"]`).forEach((item) => item.classList.remove("selected", "correct", "wrong"));
+        $(`q-${qIndex}-${aIndex}`).classList.add("selected");
+      }
+
+      function submitQuiz() {
+        let allCorrect = true;
+        currentMission.quiz.forEach(([, , correct], qIndex) => {
+          document.querySelectorAll(`[id^="q-${qIndex}-"]`).forEach((item) => item.classList.remove("selected", "correct", "wrong"));
+          const answer = quizAnswers[qIndex];
+          if (answer === undefined) {
+            allCorrect = false;
+            return;
+          }
+          if (answer === correct) {
+            $(`q-${qIndex}-${correct}`).classList.add("correct");
+          } else {
+            allCorrect = false;
+            $(`q-${qIndex}-${answer}`).classList.add("wrong");
+            $(`q-${qIndex}-${correct}`).classList.add("correct");
+          }
+        });
+        if (allCorrect) {
+          quizPassed = true;
+          playSound("success");
+          hideError("quiz-error");
+          $("quiz-lumi-msg").textContent = "Benar semua. Sekarang kamu siap membangun argumen.";
+          $("quiz-submit").style.display = "none";
+          $("quiz-next").style.display = "inline-block";
+        } else {
+          playSound("wrong");
+          showError("quiz-error");
+          $("quiz-lumi-msg").textContent = "Cek jawaban yang merah, lalu coba lagi.";
+        }
+      }
+
+      function loadArgument() {
+        ["arg-claim", "arg-evidence", "arg-reasoning", "arg-rebuttal"].forEach((id) => ($(id).value = ""));
+        $("arg-feedback").classList.remove("active");
+        hideError("arg-error");
+        updateArgSteps();
+        ["arg-claim", "arg-evidence", "arg-reasoning", "arg-rebuttal"].forEach((id) => $(id).oninput = updateArgSteps);
+        showView("view-argument");
+      }
+
+      function updateArgSteps() {
+        const ids = ["arg-claim", "arg-evidence", "arg-reasoning", "arg-rebuttal"];
+        document.querySelectorAll(".arg-step").forEach((step, index) => {
+          const filled = $(ids[index]).value.trim().length > 0;
+          const previousFilled = index === 0 || $(ids[index - 1]).value.trim().length > 0;
+          step.classList.toggle("done", filled);
+          step.classList.toggle("active", !filled && previousFilled);
+        });
+      }
+
+      function checkArgument() {
+        const claim = $("arg-claim").value.trim();
+        const evidence = $("arg-evidence").value.trim();
+        const reasoning = $("arg-reasoning").value.trim();
+        const rebuttal = $("arg-rebuttal").value.trim();
+        let msg = "Excellent. Claim, evidence, reasoning, and alternative explanation sudah nyambung.";
+        if (!claim) msg = "Mulai dari claim: apa penyebab utama menurutmu?";
+        else if (!evidence) msg = "Claim sudah ada. Sekarang tambahkan bukti dari data observasi.";
+        else if (!reasoning) msg = "Bukti sudah ada. Jelaskan kenapa bukti itu mendukung claim.";
+        else if (!rebuttal) msg = "Argumenmu kuat. Tambahkan kemungkinan lain dan kenapa claim-mu tetap lebih kuat.";
+        $("arg-feedback").textContent = msg;
+        $("arg-feedback").classList.add("active");
+        playSound("success");
+      }
+
+      function loadSolution() {
+        selectedSolution = null;
+        hideError("solution-error");
+        $("solution-options").innerHTML = currentMission.solutions.map(([id, text, score, note]) => `
+          <button class="solution-option" type="button" id="solution-${id}" data-solution="${id}">
+            <strong>${text}</strong>
+            <span>Predicted effectiveness: ${score}% • ${note}</span>
+          </button>
+        `).join("");
+        showView("view-solution");
+      }
+
+      function chooseSolution(id) {
+        playSound("click");
+        selectedSolution = id;
+        hideError("solution-error");
+        document.querySelectorAll(".solution-option").forEach((btn) => btn.classList.remove("selected"));
+        $(`solution-${id}`).classList.add("selected");
+      }
+
+      function loadVerify() {
+        const solution = currentMission.solutions.find(([id]) => id === selectedSolution);
+        if (!solution) return;
+        const [, text, score, note] = solution;
+        const color = score >= 80 ? "#10b981" : score >= 50 ? "#f59e0b" : "#ef4444";
+        const verdict = score >= 80 ? "EXCELLENT: root cause addressed." : score >= 50 ? "PARTIAL: helpful, but incomplete." : "WEAK: mostly symptom-level.";
+        $("verify-content").innerHTML = `
+          <p style="margin-top:0;"><strong>Your solution:</strong> ${text}</p>
+          <div class="result-row">
+            <span class="muted">Effectiveness</span>
+            <strong style="color:${color};font-size:22px;">${score}%</strong>
+          </div>
+          <div class="verify-meter"><div class="verify-fill" style="width:${score}%;background:${color};"></div></div>
+          <h3 style="color:${color};margin:14px 0 6px;">${verdict}</h3>
+          <p class="muted" style="margin:0;">${note}</p>
+        `;
+        showView("view-verify");
+      }
+
+      function loadReflect() {
+        $("reflect-success").classList.remove("active");
+        $("reflect-error").classList.remove("show");
+        $("reflect-error").textContent = "";
+        hideError("name-error");
+        hideError("notes-error");
+        showView("view-reflect");
+      }
+
+      function nextStep(from) {
+        if (from === "observe" && !$("observe-input").value.trim()) {
+          showError("observe-error");
+          playSound("wrong");
+          return;
+        }
+        if (from === "quiz" && !quizPassed) {
+          showError("quiz-error");
+          playSound("wrong");
+          return;
+        }
+        if (from === "argument") {
+          if (!$("arg-claim").value.trim() || !$("arg-evidence").value.trim()) {
+            showError("arg-error");
+            playSound("wrong");
+            return;
+          }
+          hideError("arg-error");
+        }
+        if (from === "solution" && !selectedSolution) {
+          showError("solution-error");
+          playSound("wrong");
+          return;
+        }
+        playSound("click");
+        stepIndex = Math.min(STEPS.length - 1, stepIndex + 1);
+        loadStep();
+      }
+
+      function submitReflection(event) {
+        event.preventDefault();
+        const name = $("reflect-name").value.trim();
+        const notes = $("reflect-notes").value.trim();
+        let valid = true;
+        if (!name) {
+          showError("name-error");
+          valid = false;
+        } else hideError("name-error");
+        if (notes.length < 10) {
+          showError("notes-error");
+          valid = false;
+        } else hideError("notes-error");
+        if (!valid) {
+          playSound("wrong");
+          return;
+        }
+        const solution = currentMission.solutions.find(([id]) => id === selectedSolution);
+        const score = solution ? solution[2] : 0;
+        const xp = 10 + (score >= 80 ? 15 : score >= 50 ? 8 : 0) + (notes.length > 34 ? 10 : 0);
+        const record = {
+          student_name: name,
+          difficulty_level: level || "teen",
+          world_id: currentWorld,
+          mission_id: currentMissionId,
+          mission_title: currentMission.title,
+          solution_chosen: solution ? solution[1] : "",
+          verification_result: `${score}%`,
+          reflection_notes: notes,
+          xp_earned: xp,
+          completed_at: new Date().toISOString(),
+          skill_scores: [$("arg-claim").value, $("arg-evidence").value, $("arg-reasoning").value, $("arg-rebuttal").value].join(" | "),
+        };
+        records.push(record);
+        writeRecords();
+        updateHud();
+        $("reflect-success").classList.add("active");
+        showXPPopup(xp);
+        playSound("success");
+      }
+
+      function updateHud() {
+        const totalXp = records.reduce((sum, record) => sum + (Number(record.xp_earned) || 10), 0);
+        $("level-badge").textContent = Math.floor(totalXp / 100) + 1;
+        $("xp-fill").style.width = `${totalXp % 100}%`;
+        $("xp-text").textContent = `${totalXp} XP`;
+        $("star-count").textContent = String(records.length);
+        const uniqueDays = new Set(records.map((record) => (record.completed_at || "").slice(0, 10)).filter(Boolean));
+        $("streak-count").textContent = String(uniqueDays.size);
+      }
+
+      function renderHistory() {
+        const empty = $("history-empty");
+        const list = $("history-list");
+        if (!records.length) {
+          empty.style.display = "block";
+          list.innerHTML = "";
+          return;
+        }
+        empty.style.display = "none";
+        list.innerHTML = records.slice().reverse().map((record) => {
+          const world = WORLDS[record.world_id];
+          const date = record.completed_at ? new Date(record.completed_at).toLocaleDateString("id-ID") : "";
+          return `<div class="history-item">
+            <div class="tag-row" style="margin-top:0;">
+              <strong style="color:${world ? world.color : "#10b981"}">${record.mission_title || record.mission_id}</strong>
+              <span class="tag">+${record.xp_earned || 10} XP</span>
+            </div>
+            <p class="muted" style="margin:8px 0 0;">${record.student_name} • ${date}</p>
+          </div>`;
+        }).join("");
+      }
+
+      function renderCompass() {
+        const scores = { observation: 0, data: 0, concept: 0, argument: 0, solution: 0, verification: 0, reflection: 0 };
+        records.forEach((record) => {
+          const verify = parseInt(record.verification_result, 10) || 0;
+          scores.observation += 8;
+          scores.data += 8;
+          scores.concept += 8;
+          scores.argument += record.skill_scores && record.skill_scores.length > 30 ? 18 : 8;
+          scores.solution += verify >= 80 ? 20 : verify >= 50 ? 12 : 5;
+          scores.verification += verify >= 80 ? 20 : verify >= 50 ? 12 : 5;
+          scores.reflection += record.reflection_notes && record.reflection_notes.length > 50 ? 18 : 8;
+        });
+        Object.keys(scores).forEach((key) => (scores[key] = Math.min(100, scores[key])));
+        const totalXp = records.reduce((sum, record) => sum + (Number(record.xp_earned) || 10), 0);
+        const stats = [
+          ["Total XP", totalXp],
+          ["Missions", records.length],
+          ["Observation", scores.observation],
+          ["Data", scores.data],
+          ["Arguments", scores.argument],
+          ["Solutions", scores.solution],
+        ];
+        $("compass-stats").innerHTML = stats.map(([label, value]) => `<div class="stat-tile"><span>${label}</span><strong>${value}</strong></div>`).join("");
+        const order = ["observation", "data", "concept", "argument", "solution", "verification", "reflection"];
+        const points = order.map((key, index) => {
+          const angle = (Math.PI * 2 * index) / order.length - Math.PI / 2;
+          const radius = Math.max(5, scores[key]) * 0.7;
+          return `${100 + radius * Math.cos(angle)},${100 + radius * Math.sin(angle)}`;
+        });
+        $("skill-polygon").setAttribute("points", points.join(" "));
+        $("compass-insights").innerHTML = [
+          scores.solution >= 70 ? "Great Solution Builder." : "Practice distinguishing symptoms from root causes.",
+          scores.argument >= 60 ? "Strong evidence-based argument." : "Build stronger claim + evidence + reasoning.",
+          scores.reflection >= 60 ? "Deep reflection habit." : "Write richer reflections after each mission.",
+        ].map((text) => `<p class="muted" style="margin:0;">${text}</p>`).join("");
+      }
+
+      function showXPPopup(xp) {
+        const el = document.createElement("div");
+        el.className = "xp-popup";
+        el.textContent = `+${xp} XP`;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1200);
+      }
+
+      function showError(id) {
+        $(id).classList.add("show");
+      }
+
+      function hideError(id) {
+        $(id).classList.remove("show");
+      }
+
+      function helpFor(step, simple) {
+        const help = {
+          observe: ["Cari data yang paling tidak normal. Bandingkan lokasi, waktu, dan pola.", "Fokus ke data yang paling aneh."],
+          simulate: ["Ubah satu variabel, lihat skor, lalu bandingkan.", "Geser satu slider dulu."],
+          solution: ["Pilih solusi yang menyasar akar masalah dan bisa diukur.", "Pilih yang menyelesaikan penyebab, bukan gejala."],
+          verify: ["Skor tinggi berarti solusi makin dekat ke akar masalah.", "Nilai besar = lebih kuat."],
+        };
+        const pair = help[step] || ["Keep going.", "Kamu bisa lanjut."];
+        return simple ? pair[1] : pair[0];
+      }
+
+      function lumiPopup(message) {
+        const modal = document.createElement("div");
+        modal.style.position = "fixed";
+        modal.style.inset = "0";
+        modal.style.zIndex = "60";
+        modal.style.display = "grid";
+        modal.style.placeItems = "center";
+        modal.style.padding = "16px";
+        modal.style.background = "rgba(0,0,0,.72)";
+        modal.innerHTML = `
+          <div class="game-panel" style="max-width:430px;width:100%;">
+            <div class="lumi-row" style="margin-bottom:14px;">
+              <div class="lumi-avatar small">L<span class="lumi-mouth"></span></div>
+              <div><strong style="color:var(--green);">LUMI</strong><p class="muted" style="margin:2px 0 0;">AI Science Buddy</p></div>
+            </div>
+            <p>${message}</p>
+            <button class="game-btn" type="button">Got it</button>
+          </div>`;
+        modal.querySelector("button").addEventListener("click", () => modal.remove());
+        document.body.appendChild(modal);
+      }
+
+      function chatReply(kind) {
+        const replies = {
+          tips: "Ubah satu variabel di simulasi, lalu tulis bukti yang berubah.",
+          xp: "XP didapat dari misi selesai, solusi kuat, dan refleksi yang jelas.",
+          mission: "Mulai dari Water World. Misi banjir paling cocok untuk memahami siklus hidrologi.",
+          about: "LUMI membantu kamu belajar sains lewat masalah keberlanjutan nyata.",
+          sdgs: "Misi LUMI terhubung dengan SDGs seperti Clean Water, Clean Energy, Climate Action, dan Life on Land.",
+        };
+        const msgs = $("chat-msgs");
+        msgs.innerHTML += `<div class="chat-msg user">${kind}</div>`;
+        setTimeout(() => {
+          msgs.innerHTML += `<div class="chat-msg">${replies[kind]}</div>`;
+          msgs.scrollTop = msgs.scrollHeight;
+        }, 250);
+        msgs.scrollTop = msgs.scrollHeight;
+      }
+
+      init();
+    </script>
+  </body>
 </html>
